@@ -10,6 +10,7 @@ abstract Collide(Int) {
 class SnowPart extends Part {
 	var dir : Int;
 	var spawn : Float;
+	var vr = 0.;
 
 	public function new(t) {
 		super(t);
@@ -21,7 +22,7 @@ class SnowPart extends Part {
 	override function update(dt:Float) {
 		dt *= 30;
 		if( spawn < 0 ) {
-			a += 0.01 * dt;
+			a += 0.01 * dt * Game.inst.level.hasSnow;
 			if( a > 1 ) {
 				a = 1;
 				spawn = 2 + Math.random() * 3;
@@ -36,6 +37,9 @@ class SnowPart extends Part {
 			}
 		}
 		vx += dir * 0.003 * dt;
+		vr += vx * 0.1 * dt;
+		rotation += vr * dt;
+		vx -= vr * 0.01 * dt;
 		if( Math.abs(vx) > 0.05 && Math.random() < 0.1 * dt )
 			dir = -dir;
 		return super.update(dt/60);
@@ -130,29 +134,50 @@ class Level {
 				t.y += 2;
 			}
 		}
-		parts = new h2d.SpriteBatch(h2d.Tile.fromColor(0xFFFFFF), root);
+		var t = switch( id ) {
+		case 2: h2d.Tile.fromColor(0x502904, 2, 1);
+		default: h2d.Tile.fromColor(0xFFFFFF);
+		}
+		parts = new h2d.SpriteBatch(t, root);
 		parts.hasUpdate = true;
+		parts.hasRotationScale = id == 2;
 		root.add(parts, 2);
+	}
 
-		for( i in 0...400 ) {
+	function getPartCount() {
+		return switch( id ) {
+		case 2: 1;
+		default: 4;
+		}
+	}
+
+	public function initSnow() {
+		var count = getPartCount();
+		for( i in 0...Std.int(count * 100) ) {
 			var p = new SnowPart(parts.tile);
 			p.x = Math.random() * width * cellSize;
 			p.y = Math.random() * height * cellSize;
 			p.vy = 0.2 + Math.random() * 0.3;
-			p.a = Math.random();
-			parts.add(p);
-		}
-
-	}
-
-	public function update(dt:Float) {
-		for( i in 0...4 ) {
-			var p = new SnowPart(parts.tile);
-			p.x = Math.random() * width * cellSize;
-			p.y = Math.random() * height * cellSize * 0.5;
-			p.vy = 0.2 + Math.random() * 0.3;
 			p.a = 0;
 			parts.add(p);
+		}
+		hasSnow = 0.01;
+	}
+
+	public var hasSnow = 0.;
+
+	public function update(dt:Float) {
+		if( hasSnow > 0 ) {
+			hasSnow += dt / 60;
+			if( hasSnow > 1 ) hasSnow = 1;
+			for( i in 0...getPartCount() ) {
+				var p = new SnowPart(parts.tile);
+				p.x = Math.random() * width * cellSize;
+				p.y = Math.random() * height * cellSize * 0.5;
+				p.vy = 0.2 + Math.random() * 0.3;
+				p.a = 0;
+				parts.add(p);
+			}
 		}
 	}
 
