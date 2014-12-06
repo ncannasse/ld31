@@ -55,8 +55,8 @@ class Game extends hxd.App {
 			e.update(dt);
 		level.update(dt);
 		if( blur != null ) {
-			blur.sigma -= 0.003 * dt;
-			if( blur.sigma <= 0 ) {
+			blur.sigma -= 0.005 * dt;
+			if( blur.sigma <= 0.2 ) {
 				blur = null;
 				level.root.filters = [];
 				if( blurEnd != null ) blurEnd();
