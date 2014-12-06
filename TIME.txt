@@ -4,4 +4,6 @@ LD31
 Day 1:
 ------
 
-03h30-08:00 : world tiles
+03:30-08:00 : world tiles
+08:00-09:00 : on my way to shiro
+09:00-10:00 : display world, move hero, handle fog

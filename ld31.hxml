@@ -1,0 +1,7 @@
+-cp src
+-swf ld31.swf
+-swf-header 1022:595:60:000000
+-swf-version 11.8
+-main Game
+-lib heaps
+-lib castle
