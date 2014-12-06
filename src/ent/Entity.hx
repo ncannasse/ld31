@@ -2,10 +2,7 @@ package ent;
 
 enum Kind {
 	EHero;
-	EHeroFire;
-	ESpider;
-	EHeroShoot;
-	EHeroFireShoot;
+	EMemory;
 }
 
 class Entity {
@@ -16,28 +13,19 @@ class Entity {
 	public var anim : h2d.Anim;
 	public var vx : Float = 0.;
 	public var vy : Float = 0.;
-	public var gravity = 0.035;
 	public var friction = 0.9;
 	public var bounce = 0.2;
-	public var dir(default, set) : Int;
+	public var dir(default, set) : hxd.Direction;
 
 	public var bounds : h2d.col.Bounds;
-	public var isBullet = false;
 
-	var onFloor : Bool;
-	var game : Game.GameData;
+	var game : Game;
 
-	public function new(mode:Game.Mode, k:Kind, x, y, dir = 1) {
-		game = Game.inst.modes[mode.getIndex()];
-		if( game == null ) throw "Missing " + mode+" for "+k;
+	public function new(k:Kind, x, y, dir : hxd.Direction = Down) {
+		game = Game.inst;
 		bounds = new h2d.col.Bounds();
 		bounds.set( -0.5, -1, 1, 1);
 		game.entities.push(this);
-		switch( mode ) {
-		case Shooter:
-			gravity = 0;
-		default:
-		}
 		this.kind = k;
 		this.x = x;
 		this.y = y;
@@ -45,25 +33,27 @@ class Entity {
 		init();
 	}
 
-	function set_dir(d:Int) {
-		if( anim != null ) anim.scaleX = d;
+	function set_dir(d:hxd.Direction) {
+		if( anim != null && d.x != 0 ) anim.scaleX = d.x;
 		return dir = d;
 	}
 
 	function set_x(v:Float) {
-		if( anim != null ) anim.x = Std.int(v * 7);
+		if( anim != null ) anim.x = v * 7;
 		return x = v;
 	}
 
 	function set_y(v:Float) {
-		if( anim != null ) anim.y = Std.int(v * 7);
+		if( anim != null ) anim.y = v * 7;
 		return y = v;
 	}
 
 	function init() {
 		anim = new h2d.Anim();
+		anim.speed = 5;
+		anim.colorKey = 0xCEA0D2;
 		game.level.root.add(anim, 1);
-		anim.play([Game.inst.sprites[kind.getIndex() * 13]]);
+		anim.play(game.sprites[kind.getIndex()]);
 		this.x = x;
 		this.y = y;
 		this.dir = dir;
@@ -119,62 +109,40 @@ class Entity {
 	}
 
 	public function update(dt:Float) {
-		switch( game.mode ) {
-		case Shooter:
+		y += vy * dt;
 
-			x += vx * dt;
-			y += vy * dt;
-			if( isBullet ) {
-				if( y < -1 && vy < 0 ) remove();
-				if( y > 11 && vy > 0 ) remove();
-			} else {
-				if( y < 1 && vy < 0 )
-					y = 1;
-				if( x < 0.5 ) x = 0.5;
-				if( y * game.level.cellSize > 66 ) y = 66 / game.level.cellSize;
-				if( x > game.level.width - 0.5 ) x = game.level.width - 0.5;
-			}
-			if( friction > 0 ) {
-				vx *= Math.pow(friction, dt);
-				vy *= Math.pow(friction, dt);
-			}
+		// head
+		if( game.level.collide(x + bounds.xMin, y + bounds.yMin) || game.level.collide(x + bounds.xMax, y + bounds.yMin) ) {
+			y = Std.int(y + bounds.yMin + 1) - bounds.yMin;
+			if( vy < 0 ) vy = -vy * bounce;
+			onCollide();
+		}
+		// foot
+		if( game.level.collide(x + bounds.xMin, y + bounds.yMax) || game.level.collide(x + bounds.xMax, y + bounds.yMax) ) {
+			y = Std.int(y + bounds.yMax) - bounds.yMax;
+			if( vy > 0 ) vy = 0;// -vy * bounce;
+			onCollide();
+		}
 
-		default:
-			y += vy * dt;
-			vy += gravity * dt;
-			if( vy > 0.9 ) vy = 0.9;
+		x += vx * dt;
 
-			// head
-			if( game.level.collide(x + bounds.xMin, y + bounds.yMin) || game.level.collide(x + bounds.xMax, y + bounds.yMin) ) {
-				y = Std.int(y + bounds.yMin + 1) - bounds.yMin;
-				if( vy < 0 ) vy = -vy * bounce;
-				onCollide();
-			}
-			// foot
-			if( game.level.collide(x + bounds.xMin, y + bounds.yMax) || game.level.collide(x + bounds.xMax, y + bounds.yMax) ) {
-				y = Std.int(y + bounds.yMax) - bounds.yMax;
-				if( vy > 0 ) vy = 0;// -vy * bounce;
-				onFloor = true;
-				onCollide();
-			} else
-				onFloor = false;
-			x += vx * dt;
+		// left
+		if( game.level.collide(x + bounds.xMin, y + bounds.yMin + 0.1) || game.level.collide(x + bounds.xMin, y + bounds.yMax - 0.1) ) {
+			x = Std.int(x + bounds.xMin + 1) - bounds.xMin + 0.01;
+			if( vx < 0 ) vx = -vx * bounce;
+			onCollide();
+		}
 
-			// left
-			if( game.level.collide(x + bounds.xMin, y + bounds.yMin + 0.1) || game.level.collide(x + bounds.xMin, y + bounds.yMax - 0.1) ) {
-				x = Std.int(x + bounds.xMin + 1) - bounds.xMin + 0.01;
-				if( vx < 0 ) vx = -vx * bounce;
-				onCollide();
-			}
+		// right
+		if( game.level.collide(x + bounds.xMax, y + bounds.yMin + 0.1) || game.level.collide(x + bounds.xMax, y + bounds.yMax - 0.1) ) {
+			x = Std.int(x + bounds.xMax) - bounds.xMax - 0.01;
+			if( vx > 0 ) vx = -vx * bounce;
+			onCollide();
+		}
 
-			// right
-			if( game.level.collide(x + bounds.xMax, y + bounds.yMin + 0.1) || game.level.collide(x + bounds.xMax, y + bounds.yMax - 0.1) ) {
-				x = Std.int(x + bounds.xMax) - bounds.xMax - 0.01;
-				if( vx > 0 ) vx = -vx * bounce;
-				onCollide();
-			}
-
-			if( friction > 0 ) vx *= Math.pow(friction, dt);
+		if( friction > 0 ) {
+			vx *= Math.pow(friction, dt);
+			vy *= Math.pow(friction, dt);
 		}
 	}
 

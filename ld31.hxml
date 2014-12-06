@@ -1,7 +1,8 @@
 -cp src
 -swf ld31.swf
--swf-header 792:594:60:000000
+-swf-header 1008:609:60:000000
 -swf-version 11.8
 -main Game
 -lib heaps
 -lib castle
+-dce full

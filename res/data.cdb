@@ -201,6 +201,109 @@
 							}
 						]
 					}
+				},
+				{
+					"width": 48,
+					"height": 29,
+					"layers": [
+						{
+							"name": "sky",
+							"data": {
+								"file": "world.png",
+								"size": 7,
+								"stride": 36,
+								"data": "BCJNGGBAgiAFAAAvAQACAP//LR8CAgBMUQQABgAEBgBxBQAHAAcABAQAAA4AABYADwIALwRWAAIIAARsAAACAAAOAABmAAIIAAIMAAACABEFDgACIAACkgACHAAAQgAABgACMgAADAAADgAELAAACgAADAAAGAAAUgAAagAAMgAAMAAAQAAAHAAAHgAADAAEFgAADAAABgAAAgAACgAAGAACCAAARAAAQAAABAAEhAACSAAAKgAARgAADgAAggAADAACBAAAAgAGQAACKAACQgAAYAACHgACEgAAEAAAFgAALgAADgAAFgAABgAAGAAABgAABAAAAgACXgAAhAAAagAAGAAAMgACHgAAUAAAGgAARgAAGAAAEgACMAAEIAAEGAAENAAAMgAAVgAATgAABAAAEgACBgAAKgAADgAAKgACSgACJgACMgAAfAAAFgAANAAACgACHgAADgAABAAAIAAGHgAAYAAAOAAAGgAAFgAADgACBAAAFAAAEgAAVAAAAgAGIAAAAgAAJAAAIgAABAAABgAAHgAACAAABgAAHAAASgAANgAACAAAGAAANAACZAAAAgAADgAAGAAAKgAAEAAACAAAUAACFgAARgAACgAAQAAAFgAACgACJAAAHAAAUgACEAAAQgAAEgAAJAAAQAAAGAACCgAAQAAAKgAAKAACDgACKgAAEAACSgAAAgAAQAAACAACCgAAUAACNgACFgAABgACDAAASAAAHAACCgAAGgAASAAAEAAATgAANAAAGgAAIgACMAAATAAADAACGgAAEAAAMAACIgAAGAAAEAAAVAAABgAADgAABgAAEAAACgAABgACOAAADgACRAACFgAABgAADAAARAACAgAASAAELgAAWAACOAAECgAAMgAAFAAAEAAAZgACPAAAGAAABgAABAAADAAABAAAEgAAJgAACAAAEAAANgAABAAADgAACAAAGAAAKgAAFgAAHgAADAACDgAAAgAAKAAAGgAAEgAATAACFAAAOgAAKAAAPAAACgACBgAACAAAAgAANgAAHAAABAAANgAALgAEDAAAHgACAgAGZgAAIgAAKAACOAAAKgACBgACLgAABgAAHgAARgAAFAAACAAEEgAAEAAAbAACTgAACAAAIAAAEgAITgAAEAAAMgAAAgAAPAACBAAAJAAAGgAACAAGNgACagAAPgAAGgAEDgAAOgAAFgAAEgAAZAAABgAAAgAAFAAAAgACGAACgAAANAAAIAAARAAABAAAFgAAEAAACAAGAgAAUgAEBgACPgAACAAABAAGagAAggAAGAAKUAAAVAAABAAAfAAABAACSgAAFAAAEAACfgAAOgAACgAAQAAALAAMHAAAHgACBAAAAgAAIAACBgAAAgAAGAAAAgAAYgAAGgACKgAEBgAGAgACIAAAQAAAFAAAigAALgAADgAAFgACSgAAQgAAAgAAHAAADgAAlAAAUgACEAAAOAAAMgAAFAACBgAAHAACCgACHgAADgAABAAAEAACSAAAAgAAEAAAPAEEBAAAWgAAFAAAEgAAIAAAAgACMAAAHAACZAAAAgACEAAAKAAAKgACGAAALAAAEgAAIAAADgACZgAAHgAABAAASAAAIAAAWAAACgACFgACJAAAUAAAHAAEAgAAEAAAHAAACAAABgACLgAAVgAASAAABAAADAAADgAAAgAKIAAAOAACZgAAPAAAAgAAVgACLgACCgAAMgAEAgAAMAAAZgAAEAAAMgACBABgBwAGAAUAAAAAAA=="
+							}
+						},
+						{
+							"name": "bg",
+							"data": {
+								"file": "world.png",
+								"size": 7,
+								"stride": 36,
+								"data": "BCJNGGBAgl8DAAAfAAEAsBMlAgAPywBDvyYAJwABACgAJwAmYQBCcSUAKAAoACVoAB8oYgAyESYCAARLABFJXAAxKAAmJgEEFgAPAgAhAFYABgIABEIAEUliADEnACdgAAAoAQ/GACMGWgAAAgAUSV8AAWAAAHwBAMAAACgBAgIABoAADwIAEwBAAAYCAABUAAQ4ABFJGgEAHAACBgAAyAAABgAPYgATMSYAAQIAAEAAAgIAAFwAAAIABGAAABwBAFAAAOYBACIAAF4AAAYAAMwAACQAANAAAAgADwIAAw5gAAQCAAQwAADcAQBOAAQGAAAQAAByAAAGAABcAAICAAIuAAA8AAYKAAQCAADCAAQMAAQCAAbAAADMAAJWAARiAABeAABgADMoAAFcAgJgAAAWAAACAABiAABWAQYCAAhgAABQAAACAAAmAAACAAAMAABCAAAYAQAGAABKAgBwAAI0AQAOAADIAAAqAAAUAAICAAI2AAIMAABeAA9gAA0CUgAAsgAATgAACgAABAACAgAAcgAAjgAASgAGAgAAlgAEDgAIXgAAAgAAHAAAMgACAgAAvgAAFgACXAAAigEAUgAACAAC0AARKMICD2AAAQRiAAxgAAACABIDXQBBAAAAA0AAAqwAAFgAAFIAABwBAAwAACoAAL4ABEoAAEwAAAIAAAoAABYAAAwAAAIAABAACgIAAVsAAwIAACoAAGIAAhoBAGAAAF4AAL4AArwADF4AAlAACBgAAAIAABAABioACGIAEwPEAAACAACwAAIgAQAOAAQCAAAwAAS8AAACAAAOAAAcAAAIAAACAAAMAAgCAAAUAAO9AAMCAAhkAA9cAAEOXgAAWAEAGAAIWAAIAgADWQAHAgAIHgACAgAAQAACrgAAtgACAgAAFAAAVgAAlAACJgAPAgADB1kABQIACMYAEQPGBQQCAAJcAAZeAAJAAAAIAA8CAAUFVQALAgACMAAAYAICCgAAAgAEZgACAgAAEgACQAAACAAEAgAAnAAI0gALVwAFAgAAJgAAXgAKPgAAAgAAXgAACAACAgAIIgAEMgAEPgAAIgAADgAPAgALACYADwIABQaCAAZcAAYCAA8UAAEPAgABD14ACw9IABcPAgAFAIgADwIAAQ8wAAUPAgD/G1AAAAAAAAAAAAA="
+							}
+						},
+						{
+							"name": "hills",
+							"data": {
+								"file": "world.png",
+								"size": 7,
+								"stride": 36,
+								"data": "BCJNGGBAghABAAAfAAEA/80fSuABTA9gAEcRS7oAD2AArQ8CAKcPgAEpD7YBEQ9gACkfTFcBEA9gABsCLgAPAgAZAjIAD+oAEQACAAIuAA8CABkRTS0AH0xiABYPAgAlAGAAAAQADwIARQCsAQ9gAEkAAgACZAAPZgAbD5IBDQwgAAqKAQweAA4CAB9LugEMDkIAAsYAAkoADh4ADAIABGAADyoABQ8YAAMGYAAECgAPAgAFBCIAD0gAAw8YAAUAxAAAAgAfTZABCgBUAA9gACMGAgAKkAEKAgAAYAAAggAAFgAADAAPAgABAmADDwIACQJAAA8CAAERSz4AAuwAAAoADwIAIwJAAA8CAAEPVAAnDwIA+FAAAAAAAAAAAAA="
+							}
+						},
+						{
+							"name": "objects",
+							"data": {
+								"file": "world.png",
+								"size": 7,
+								"stride": 36,
+								"data": "BCJNGGBAgvoAAAAfAAEA/9cfbuoBLn9uAG8AbQBtSAAEP20AbxoABA8CABUfblwABgAcAA8eAAkPAgARAKAAD6IABwAcAA/aAAUPAgAxEW5kAAA+AQIGAA9UADEIAgARbSIBCBIADwIAEwD4AAgqAACeAAoSAAICAAD8AQAYAAAeAAAMAAIWAA4CAAzaAAAwAAguAAwgAAYCAAAmAADGAAAGAAIIAA8CAAEMBgIM9gAPYAAHACoAAAIAAuIAAMYAD2YAAQAiAA94AAECAgAAHgAPYgAJAFwAAAIAAMwADwIAAwAeAA8aAAMPAgARAIAAALwADywAEQ8CAP/////yUAAAAAAAAAAAAA=="
+							}
+						},
+						{
+							"name": "collide",
+							"data": {
+								"file": "world.png",
+								"size": 7,
+								"stride": 36,
+								"data": "BCJNGGBAgpYBAAAfAAEATiaJAgIAD20APwBcAARWAAgMAA8CADUCXgACBgAACAAECgAPAgA1DFAADBAADwIALQyyAAAQAAACAA9YAC0EAgAATAAOTgAAFAAOFgAPAgAhAEgAD0oAAw8YAAUPAgAbD0YACQAcAAQCAA9WABsGAgAPOgALAF4AACwAAggAAAYAAgIAABQADwIAEw8sABUGWAAACgAPXAATAAIAAC4ADzAABwYaAAgmAAgMAA8CAA8PLgATCiYACg4ADwIACw8sABEOJAAG2gAPAgANDyoADwBeAAwmAA4SAA8CAAUAKgAMPgAKAgAPIAADDzQACwoCAA9CAAMAAgAAGgAPSgADDxYAAw8CAAUARgAAAgAGIAAADgAEAgAGFgAGAgAPFgADDwIACQZOAAQKAAACAA8yAAMPGgAHDwIADQA6AAQCAA8sAAcPHAAJDwIAEw9CAAkAgAAPRgATDwIABwBEAAQCAAomAAIWAAoUAA8CACkCUAACUgAACAACCgAPAgA9AFgAAgIAD1oAPQ8CAP+lUAAAAAAAAAAAAA=="
+							}
+						},
+						{
+							"name": "ent",
+							"data": {
+								"file": "sprites.png",
+								"size": 9,
+								"stride": 13,
+								"data": "BCJNGGBAghoAAAAfAAEA//////+rHw66Bf//////ElAAAAAAAAAAAAA="
+							}
+						}
+					],
+					"tileProps": [],
+					"props": {
+						"tileSize": 7,
+						"layers": [
+							{
+								"l": "bg",
+								"p": {
+									"alpha": 1,
+									"mode": "ground"
+								}
+							},
+							{
+								"l": "objects",
+								"p": {
+									"alpha": 1
+								}
+							},
+							{
+								"l": "hills",
+								"p": {
+									"alpha": 1
+								}
+							},
+							{
+								"l": "sky",
+								"p": {
+									"alpha": 1
+								}
+							},
+							{
+								"l": "collide",
+								"p": {
+									"alpha": 0.47
+								}
+							},
+							{
+								"l": "ent",
+								"p": {
+									"alpha": 1
+								}
+							}
+						]
+					}
 				}
 			],
 			"separators": [],
@@ -429,88 +532,84 @@
 								null,
 								null,
 								null,
+								null,
+								null,
+								null,
+								null,
+								null,
+								null,
+								null,
+								null,
+								null,
+								null,
+								null,
+								null,
+								null,
+								null,
+								null,
+								null,
+								null,
+								null,
+								null,
+								null,
+								null,
+								null,
+								null,
+								null,
+								null,
+								null,
+								null,
+								null,
+								null,
+								null,
+								null,
+								null,
+								null,
+								null,
+								null,
+								null,
+								null,
+								null,
+								null,
+								null,
+								null,
+								null,
+								null,
+								null,
+								null,
+								null,
+								null,
+								null,
+								null,
+								null,
+								null,
+								null,
+								null,
+								null,
+								null,
+								null,
+								null,
+								null,
+								null,
+								null,
+								null,
+								null,
+								null,
+								null,
+								null,
+								null,
+								null,
+								null,
+								null,
+								null,
+								null,
+								null,
 								{
 									"collide": 0
 								},
 								{
 									"collide": 0
 								},
-								{
-									"collide": 0
-								},
-								{
-									"collide": 0
-								},
-								null,
-								null,
-								null,
-								null,
-								null,
-								null,
-								null,
-								null,
-								null,
-								null,
-								null,
-								null,
-								null,
-								null,
-								null,
-								null,
-								null,
-								null,
-								null,
-								null,
-								null,
-								null,
-								null,
-								null,
-								null,
-								null,
-								null,
-								null,
-								null,
-								null,
-								null,
-								null,
-								null,
-								null,
-								null,
-								null,
-								null,
-								null,
-								null,
-								null,
-								null,
-								null,
-								null,
-								null,
-								null,
-								null,
-								null,
-								null,
-								null,
-								null,
-								null,
-								null,
-								null,
-								null,
-								null,
-								null,
-								null,
-								null,
-								null,
-								null,
-								null,
-								null,
-								null,
-								null,
-								null,
-								null,
-								null,
-								null,
-								null,
-								null,
 								null,
 								null,
 								null,
@@ -814,7 +913,24 @@
 						"sprites.png": {
 							"stride": 13,
 							"sets": [],
-							"props": []
+							"props": [
+								null,
+								null,
+								null,
+								null,
+								null,
+								null,
+								null,
+								null,
+								null,
+								null,
+								null,
+								null,
+								null,
+								{
+									"collide": 0
+								}
+							]
 						}
 					}
 				}

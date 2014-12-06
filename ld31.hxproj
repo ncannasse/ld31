@@ -6,8 +6,8 @@
     <movie input="" />
     <movie path="ld31.swf" />
     <movie fps="60" />
-    <movie width="792" />
-    <movie height="594" />
+    <movie width="1008" />
+    <movie height="609" />
     <movie version="11" />
     <movie minorVersion="8" />
     <movie platform="Flash Player" />
@@ -24,7 +24,7 @@
     <option noInlineOnDebug="False" />
     <option mainClass="Game" />
     <option enabledebug="False" />
-    <option additional="-lib heaps&#xA;-lib castle" />
+    <option additional="-lib heaps&#xA;-lib castle&#xA;-dce full" />
   </build>
   <!-- haxelib libraries -->
   <haxelib>

@@ -7,6 +7,41 @@ abstract Collide(Int) {
 	}
 }
 
+class SnowPart extends Part {
+	var dir : Int;
+	var spawn : Float;
+
+	public function new(t) {
+		super(t);
+		dir = randDir();
+		spawn = -1;
+		update(0);
+	}
+
+	override function update(dt:Float) {
+		dt *= 30;
+		if( spawn < 0 ) {
+			a += 0.01 * dt;
+			if( a > 1 ) {
+				a = 1;
+				spawn = 2 + Math.random() * 3;
+			}
+		} else {
+			spawn -= dt;
+			if( spawn < 0 ) {
+				spawn = 0;
+				a -= 0.01 * dt;
+				if( a < 0 )
+					return false;
+			}
+		}
+		vx += dir * 0.003 * dt;
+		if( Math.abs(vx) > 0.05 && Math.random() < 0.1 * dt )
+			dir = -dir;
+		return super.update(dt/60);
+	}
+}
+
 
 class Level {
 
@@ -16,13 +51,14 @@ class Level {
 	public var height : Int;
 	var col : Array<Collide>;
 	var data : Data.World;
-	var game : Game.GameData;
+	var game : Game;
 	public var cellSize = 7;
+	var parts : h2d.SpriteBatch;
 
-	public function new(id, gd) {
+	public function new(id) {
 		this.id = id;
-		game = gd;
-		root = new h2d.Layers();
+		game = Game.inst;
+		root = new h2d.Layers(game.s2d);
 		data = Data.world.all[id];
 		width = data.width;
 		height = data.height;
@@ -42,20 +78,31 @@ class Level {
 		for( l in data.layers ) {
 			var ldat = l.data.data.decode();
 
-			if( l.name == "monster" ) {
+			switch( l.name ) {
+			case "ent":
 				var p = -1;
 				for( y in 0...height )
 					for( x in 0...width ) {
 						var tid = ldat[++p] - 1;
 						if( tid < 0 ) continue;
 						switch( tid ) {
-						case 26:
-							new ent.Spider(game.mode, x + 0.5, y + 1);
+						case 13:
+							new ent.Item(EMemory, x + 0.5, y + 1);
 						default:
 							throw "Unknown entity #" + tid;
 						}
 					}
 				continue;
+			case "collide":
+				var p = -1;
+				for( y in 0...height )
+					for( x in 0...width ) {
+						var tid = ldat[++p] - 1;
+						if( tid < 0 ) continue;
+						col[p] = Full;
+					}
+				continue;
+			default:
 			}
 
 			var t = new h2d.TileGroup(tile, root);
@@ -83,18 +130,30 @@ class Level {
 				t.y += 2;
 			}
 		}
+		parts = new h2d.SpriteBatch(h2d.Tile.fromColor(0xFFFFFF), root);
+		parts.hasUpdate = true;
+		root.add(parts, 2);
+
+		for( i in 0...400 ) {
+			var p = new SnowPart(parts.tile);
+			p.x = Math.random() * width * cellSize;
+			p.y = Math.random() * height * cellSize;
+			p.vy = 0.2 + Math.random() * 0.3;
+			p.a = Math.random();
+			parts.add(p);
+		}
+
 	}
 
 	public function update(dt:Float) {
-		var g = Game.inst;
-		var sx = game.hero.x * cellSize - g.s2d.width / 6;
-		var sy = game.hero.y * cellSize - g.s2d.height / 6;
-		if( sx < 0 ) sx = 0;
-		if( sy < 0 ) sy = 0;
-		if( sx + g.s2d.width / 3 > width * cellSize ) sx = width * cellSize - g.s2d.width / 3;
-		if( sy + g.s2d.height / 3 > height * cellSize ) sy = height * cellSize - g.s2d.height / 3;
-		root.x = -Std.int(sx);
-		root.y = -Std.int(sy);
+		for( i in 0...4 ) {
+			var p = new SnowPart(parts.tile);
+			p.x = Math.random() * width * cellSize;
+			p.y = Math.random() * height * cellSize * 0.5;
+			p.vy = 0.2 + Math.random() * 0.3;
+			p.a = 0;
+			parts.add(p);
+		}
 	}
 
 }
