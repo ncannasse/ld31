@@ -22,6 +22,11 @@ class Level {
 	public function new(id, gd) {
 		this.id = id;
 		game = gd;
+		root = new h2d.Layers();
+		data = Data.world.all[id];
+		width = data.width;
+		height = data.height;
+		col = [for( i in 0...width * height ) No];
 	}
 
 	public function collide(x:Float, y:Float) {
@@ -31,11 +36,6 @@ class Level {
 	}
 
 	public function init() {
-		root = new h2d.Layers();
-		data = Data.world.all[id];
-		width = data.width;
-		height = data.height;
-		col = [for( i in 0...width * height ) No];
 		var tile = hxd.Res.world.toTile();
 		var tl = tile.grid(cellSize);
 		var tprops = data.props.getTileset(Data.world, "world.png");

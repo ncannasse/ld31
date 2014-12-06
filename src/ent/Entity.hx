@@ -4,6 +4,8 @@ enum Kind {
 	EHero;
 	EHeroFire;
 	ESpider;
+	EHeroShoot;
+	EHeroFireShoot;
 }
 
 class Entity {
@@ -20,15 +22,22 @@ class Entity {
 	public var dir(default, set) : Int;
 
 	public var bounds : h2d.col.Bounds;
+	public var isBullet = false;
 
 	var onFloor : Bool;
 	var game : Game.GameData;
 
-	public function new(mode:Game.Mode, k, x, y, dir = 1) {
-		game = Game.inst.d[mode.getIndex()];
+	public function new(mode:Game.Mode, k:Kind, x, y, dir = 1) {
+		game = Game.inst.modes[mode.getIndex()];
+		if( game == null ) throw "Missing " + mode+" for "+k;
 		bounds = new h2d.col.Bounds();
 		bounds.set( -0.5, -1, 1, 1);
 		game.entities.push(this);
+		switch( mode ) {
+		case Shooter:
+			gravity = 0;
+		default:
+		}
 		this.kind = k;
 		this.x = x;
 		this.y = y;
@@ -55,9 +64,9 @@ class Entity {
 		anim = new h2d.Anim();
 		game.level.root.add(anim, 1);
 		anim.play([Game.inst.sprites[kind.getIndex() * 13]]);
-		anim.x = x;
-		anim.y = y;
-		anim.scaleX = dir;
+		this.x = x;
+		this.y = y;
+		this.dir = dir;
 	}
 
 	function onCollide() {
@@ -111,6 +120,25 @@ class Entity {
 
 	public function update(dt:Float) {
 		switch( game.mode ) {
+		case Shooter:
+
+			x += vx * dt;
+			y += vy * dt;
+			if( isBullet ) {
+				if( y < -1 && vy < 0 ) remove();
+				if( y > 11 && vy > 0 ) remove();
+			} else {
+				if( y < 1 && vy < 0 )
+					y = 1;
+				if( x < 0.5 ) x = 0.5;
+				if( y * game.level.cellSize > 66 ) y = 66 / game.level.cellSize;
+				if( x > game.level.width - 0.5 ) x = game.level.width - 0.5;
+			}
+			if( friction > 0 ) {
+				vx *= Math.pow(friction, dt);
+				vy *= Math.pow(friction, dt);
+			}
+
 		default:
 			y += vy * dt;
 			vy += gravity * dt;

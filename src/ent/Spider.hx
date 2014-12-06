@@ -14,13 +14,13 @@ class Spider extends Entity {
 			jumpWait -= dt / 60;
 			if( jumpWait < 0 ) {
 				var pow = Math.random();
-				vx = (0.2 + pow * 0.3) * dir;
-				vy = -(0.2 + pow * 0.2);
-				jumpWait = 1 + Math.random();
+				vx = (0.2 + pow * 0.1) * dir;
+				vy = -(0.2 + pow * 0.1);
+				jumpWait = 0.5 + Math.random() * 0.5;
+			} else {
+				vx += dir * 0.005 * dt;
+				if( trand(0.01) ) dir = -dir;
 			}
-		} else {
-			vx += dir * 0.03 * dt;
-			if( trand(0.01) ) dir = -dir;
 		}
 		super.update(dt);
 		if( !game.hero.isRemoved() && game.hero.collide(this) )

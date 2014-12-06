@@ -2,7 +2,7 @@ import hxd.Key in K;
 
 enum Mode {
 	Platform;
-	Mode2;
+	Shooter;
 	Mode3;
 	Mode4;
 	Mode5;
@@ -22,14 +22,20 @@ class MyPart extends h2d.SpriteBatch.BatchElement {
 		dt *= 60;
 		x += vx * dt;
 		y += vy * dt;
-		vy += 0.2 * dt;
-		if( vy > 0 && game.level.collide(x/game.level.cellSize, y/game.level.cellSize) ) {
-			vy *= -0.8;
-			hit++;
-		}
-		if( hit > 3 ) {
-			a -= 0.1 * dt;
-			if( a < 0 ) return false;
+		switch( game.mode ) {
+		case Platform:
+			vy += 0.2 * dt;
+			if( vy > 0 && game.level.collide(x/game.level.cellSize, y/game.level.cellSize) ) {
+				vy *= -0.8;
+				hit++;
+			}
+			if( hit > 3 ) {
+				a -= 0.1 * dt;
+				if( a < 0 ) return false;
+			}
+		case Shooter:
+			if( y > 66 ) return false;
+		default:
 		}
 		return true;
 	}
@@ -59,14 +65,19 @@ class GameData {
 	public function init() {
 		parts = new h2d.SpriteBatch(hxd.Res.sprites.toTile());
 		parts.hasUpdate = true;
-		level.root.add(parts, 1);
+		switch( mode ) {
+		case Shooter:
+			level.root.add(parts, 0);
+		default:
+			level.root.add(parts, 1);
+		}
 	}
 
 }
 
 class Game extends hxd.App {
 
-	public var d : Array<GameData>;
+	public var modes : Array<GameData>;
 	public var sprites : Array<h2d.Tile>;
 
 	override function init() {
@@ -75,13 +86,20 @@ class Game extends hxd.App {
 
 		s2d.zoom = 3;
 
-		d = [for( m in Mode.createAll() ) new GameData(m)];
-		for( d in d ) {
+		//modes = [for( m in Mode.createAll() ) new GameData(m)];
+		modes = [new GameData(Platform),new GameData(Shooter)];
+
+		for( d in modes ) {
+			if( d == null ) continue;
 			switch( d.mode ) {
 			case Platform:
 				d.level = new Level(1,d);
 				d.level.init();
 				d.hero = new ent.Hero(d.mode, 1, 15);
+			case Shooter:
+				d.level = new ShooterLevel(2,d);
+				d.level.init();
+				d.hero = new ent.Hero(d.mode, d.level.width>>1, 4);
 			default:
 				// platform
 				d.level = new Level(1,d);
@@ -98,7 +116,8 @@ class Game extends hxd.App {
 	}
 
 	override function update( dt : Float ) {
-		for( m in d ) {
+		for( m in modes ) {
+			if( m == null ) continue;
 			for( e in m.entities.copy() )
 				e.update(dt);
 			m.level.update(dt);

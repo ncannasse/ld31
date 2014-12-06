@@ -174,6 +174,33 @@
 						]
 					},
 					"tileProps": []
+				},
+				{
+					"width": 13,
+					"height": 150,
+					"layers": [
+						{
+							"name": "bg",
+							"data": {
+								"file": "world.png",
+								"size": 7,
+								"stride": 36,
+								"data": "BCJNGGBAghsAAAAvrQICAP///////////////////zFQAq0CrQIAAAAA"
+							}
+						}
+					],
+					"tileProps": [],
+					"props": {
+						"tileSize": 7,
+						"layers": [
+							{
+								"l": "bg",
+								"p": {
+									"alpha": 1
+								}
+							}
+						]
+					}
 				}
 			],
 			"separators": [],
