@@ -6,8 +6,8 @@
     <movie input="" />
     <movie path="ld31.swf" />
     <movie fps="60" />
-    <movie width="1022" />
-    <movie height="595" />
+    <movie width="792" />
+    <movie height="594" />
     <movie version="11" />
     <movie minorVersion="8" />
     <movie platform="Flash Player" />
