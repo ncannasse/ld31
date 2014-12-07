@@ -13,9 +13,13 @@ class Npc extends Entity {
 		case EFisher:
 			var fil = new h2d.Bitmap(h2d.Tile.fromColor(0xEDEEF1, 1, 5 * 7), anim);
 			fil.x = 3;
+		case EOldTree:
+			if( game.level.s != Autumn ) anim.alpha = 0;
 		default:
 		}
 	}
+
+	var curSeason : Null<Level.Season>;
 
 	override function update(dt:Float) {
 
@@ -29,6 +33,26 @@ class Npc extends Entity {
 			}
 		}
 
+		if( curSeason != game.level.s ) {
+			curSeason = game.level.s;
+			var view : Entity.Kind = switch( kind ) {
+			case EDog: curSeason == Spring ? ETomb : EDog;
+			case EWomen: switch( curSeason ) {
+				case Summer: EWomen;
+				case Winter: EWomen3;
+				default: EWomen2;
+				}
+			case EChild:
+				if( curSeason != Spring ) anim.speed = 0;
+				curSeason == Spring ? EChildCry : EChild;
+			case EOldTree:
+				EHouse; // remap
+			default:
+				kind;
+			}
+			anim.frames = game.sprites[view.getIndex()];
+		}
+
 		if( anim.speed == 0 )
 			switch( kind ) {
 			case EDog:
@@ -36,11 +60,17 @@ class Npc extends Entity {
 			case EWomen:
 				anim.speed = 10;
 			case EChild:
-				if( trand(0.01) ) {
+				if( game.level.s == Spring ) {
+					anim.speed = 7;
+				} else if( trand(0.01) ) {
 					var way = 1;
 					anim.speed = 1;
 					anim.onAnimEnd = function() { };
 					game.waitUntil(function(dt) {
+						if( game.level.s == Spring ) {
+							anim.speed = 0;
+							return true;
+						}
 						anim.speed += dt * 0.4 * way;
 						if( anim.speed > 20 ) {
 							anim.speed = 20;
@@ -78,6 +108,15 @@ class Npc extends Entity {
 			case EMerchant:
 				if( anim.speed == 0 && trand(0.01) )
 					anim.speed = 16;
+			case EOldTree:
+				if( curSeason == Autumn ) {
+					anim.alpha += 0.003 * dt;
+					if( anim.alpha > 1 ) anim.alpha = 1;
+				} else {
+					anim.alpha -= 0.003 * dt;
+					if( anim.alpha < 0 ) anim.alpha = 0;
+				}
+
 			default:
 			}
 	}

@@ -8,9 +8,13 @@ enum ItemKind {
 	Snow;
 	Bone;
 	Wood;
-	Cutter;
+	Axe;
 	Friend;
 	Cave;
+	Meet;
+	Love;
+	MantleGirl;
+	GaveWood;
 }
 
 class Game extends hxd.App {
@@ -30,6 +34,7 @@ class Game extends hxd.App {
 	var answerResult : Bool;
 	var items : Array<ItemKind>;
 	var memoryCount : Int;
+	var end : Bool;
 	public var hasAction : Bool;
 
 	override function init() {
@@ -39,7 +44,7 @@ class Game extends hxd.App {
 
 		var grid = hxd.Res.sprites.toTile().grid(9, -5, -8);
 		var line = 0;
-		sprites = [for( frames in [3, 4, 4, 4, 8, 0, 6, 4, 6, 4] ) { var a = [for( i in 0...frames ) grid[line * 13 + i]]; line++; a; } ];
+		sprites = [for( frames in [3, 4, 4, 4, 8, 1, 6, 4, 6, 4, 6, 1, 6, 6] ) { var a = [for( i in 0...frames ) grid[line * 13 + i]]; line++; a; } ];
 
 		parts = new h2d.SpriteBatch(hxd.Res.sprites.toTile(), s2d);
 		parts.hasUpdate = true;
@@ -47,29 +52,37 @@ class Game extends hxd.App {
 		s2d.zoom = 3;
 		events = [];
 
-		level = new Level(Summer);
+		var time : Level.Season = Winter;
+		#if debug
+		time = Summer;
+		#end
+
+		level = new Level(time);
 		level.init();
+
+		playMusic();
 
 		hero = new ent.Hero(4.5, 3.5);
 		hero.lock = true;
 		new ent.Item(EMemory, 13, 15);
+		new ent.Npc(EOldTree, 2, 3);
 
 		#if debug
 
 		hero.lock = false;
 		level.initSnow();
 
-		autoGet(Memory);
-		autoGet(House);
-		autoGet(Memory);
 		autoGet(Friend);
+		autoGet(Memory);
+		autoGet(Memory);
+		autoGet(Cave);
 
 		#else
 
 		blurIn(function() {
 			wait(0, function() {
 				talk("Here we are, back again...", function() {
-					talk("Who am I supposed to be ?", function() {
+					talk("How am I supposed to live with that?", function() {
 						level.initSnow();
 					});
 				});
@@ -86,6 +99,13 @@ class Game extends hxd.App {
 			if( e != null ) e.remove();
 		}
 	}
+
+	function playMusic() {
+		var r = Res.music;
+		r.loop = true;
+		r.play();
+	}
+
 
 	function action() {
 		if( hasAction ) {
@@ -112,7 +132,7 @@ class Game extends hxd.App {
 	public function talk( text : String, ?onEnd : Void -> Void ) {
 		if( colorMat == null ) {
 			colorMat = new h2d.filter.ColorMatrix();
-			level.root.filters = [colorMat];
+			level.root.filters.push(colorMat);
 		}
 		hero.lock = true;
 		colorMatWay = 1;
@@ -120,7 +140,7 @@ class Game extends hxd.App {
 			var t = getText(s2d);
 			t.text = text;
 			t.x = Std.int((s2d.width - t.textWidth * t.scaleX) * 0.5);
-			t.y = 36;
+			t.y = 30;
 			textAppear(t, function() {
 				waitUntil(function(dt) {
 					t.alpha -= 0.1 * dt;
@@ -148,7 +168,7 @@ class Game extends hxd.App {
 				t.text = text.substr(0, p);
 				ipos = p;
 			}
-			if( action() ) {
+			if( action() && !end ) {
 				if( p >= text.length ) {
 					onEnd();
 					return true;
@@ -278,12 +298,26 @@ class Game extends hxd.App {
 		return items.indexOf(k) >= 0;
 	}
 
+
+	var SEASONS = [];
+
 	public function enterSeason() {
+
+		if( SEASONS[level.s.toInt()] ) {
+			level.startSnow();
+			return;
+		}
+		SEASONS[level.s.toInt()] = true;
+
 		switch( level.s ) {
 		case Autumn:
-			talk("The house is warm, but why do I feel so lonely ?", level.startSnow);
-		default:
-			level.startSnow();
+			talk("The house is warm, but why do I feel so lonely?", level.startSnow);
+		case Summer:
+			talk("So hot...", function() talk("Feels like hell."));
+		case Spring:
+			talk("Rain theorem proved once more.", function() talk("\"It always rain when you forget your umbrella\"", level.startSnow));
+		case Winter:
+			talk("Here we are, back again...", function() talk("How am I supposed to live with that?", level.startSnow));
 		}
 	}
 
@@ -299,33 +333,39 @@ class Game extends hxd.App {
 			case Autumn:
 				talkNpc(e, [
 					"At my age, I don't think I will live through the upcoming winter...",
-					"Why did I trade my mantle in the first place ?",
+					"What color was my mantle?",
+					"Was it orange?",
+					"Or blue?",
+					"Or red as blood?",
 				]);
 			case Summer:
+				if( hasItem(Mantle) ) {
+					talkNpc(e, ["It's so hot I don't need a mantle!"]);
+					return;
+				}
 				talkNpc(e, [
-					"It's so hot !",
+					"It's so hot!",
 					"If someone could bring me something cold, I would give him a present...",
-				]);
+				],function() {
+					if( hasItem(Snow) ) {
+						askNpc(e, ["Oh !!!", "You have some snow, at this season?", "Would you give it me?", "I will exchange for something I don't need."], function(b) {
+							if( !b ) {
+								talkNpc(e, ["You stringy!"]);
+								return;
+							}
+							talkNpc(e, ["Thank you!", "Here's for you!"], function() {
+								wait(0.5, function() getItem(Mantle));
+								hero.lock = true;
+								wait(1.5, function() talk("To date I still wonder why she gave me her mantle.."));
+							});
+						});
+					}
+				});
 			case Spring:
 				talkNpc(e, [
-					"Spring is the best season don't you think ?",
-					"Makes me feel young again, and forget all these hardships.",
+					"Spring is the best season don't you think?",
+					"Makes me feel young again, when I was in love.",
 				]);
-				if( hasItem(Mantle) ) {
-					talkNpc(e, ["It's so hot I don't need a mantle !"]);
-				} else if( hasItem(Snow) ) {
-					askNpc(e, ["Oh !!!", "You have some snow, at this season ?", "Would you give it me ?", "I will exchange for something I don't need."], function(b) {
-						if( !b ) {
-							talkNpc(e, ["You stringy!"]);
-							return;
-						}
-						talkNpc(e, ["Thank you !", "Here's for you !"], function() {
-							wait(0.5, function() getItem(Mantle));
-							hero.lock = true;
-							wait(1.5, function() talk("To date I still wonder why she gave me her mantle.."));
-						});
-					});
-				}
 			}
 		case EFisher:
 			switch( level.s ) {
@@ -333,7 +373,7 @@ class Game extends hxd.App {
 				talkNpc(e, [
 					"The clouds are strange these days...",
 					"I don't seem to be able to catch any fish.",
-					"What will happen if they is no more of them ?"
+					"What will happen if they is no more of them?"
 				]);
 			case Autumn:
 				talkNpc(e, [
@@ -341,6 +381,43 @@ class Game extends hxd.App {
 					"They can sense every small change in this world.",
 					"And they are affected by it, as we are."
 				]);
+			case Summer:
+
+				if( hasItem(Axe) ) {
+					talkNpc(e, [
+						"I like to fish so much, I can't help it...",
+						"But cloud fishes, they like bones, and they eat a lot of them.",
+						"But thanks to you I have a lot now!"
+					]);
+					return;
+				}
+
+				talkNpc(e, [
+					"I like to fish so much, I can't help it...",
+					"But cloud fishes, they like bones, and I'm running out of them.",
+					"I have some idea to get more, but it's not a good thing to do..."
+				],function() {
+					if( hasItem(Bone) ) {
+						askNpc(e, [
+							"Oh!",
+							"You got bones?",
+							"Give them to me!",
+							"Please!"
+						], function(b) {
+							if( !b ) {
+								talkNpc(e, ["..."]);
+								return;
+							}
+							talkNpc(e, ["Yeah!", "Here's for you!"], function() {
+								getItem(Axe);
+							});
+						});
+					}
+				});
+			case Spring:
+
+				talkNpc(e, ["I wonder where I put my axe...","It could be useful, some day..."]);
+
 			default:
 			}
 		case EMerchant:
@@ -357,7 +434,7 @@ class Game extends hxd.App {
 
 				askNpc(e, [
 					"So, you came back after all...",
-					"And now you want me to build that house we talk about for you, right ?"
+					"And now you want me to build that house we talk about for you, right?"
 				], function(b) {
 					if( !b ) return;
 
@@ -376,16 +453,71 @@ class Game extends hxd.App {
 				});
 			case Autumn:
 				talkNpc(e, [
-					"Thank you for the wood !",
-					"Thanks to you I could build this new bridge !",
-					"Come to meet me another time and ask me anything in return !",
+					"Thank you for the wood!",
+					"Thanks to you I could build this new bridge!",
+					"Come to meet me another time and ask me anything in return!",
 				]);
-			default:
+
+			case Summer:
+
+				if( hasItem(GaveWood) ) {
+					talkNpc(e, ["Thank you for the wood.", "Building this bridge will take me some time now."]);
+					return;
+				}
+
+				talkNpc(e, [
+					"I got this project, you see...",
+					"It's to build a bridge to the next island.",
+					"Wonderful dream, don't you think?",
+					"But I need some wood to build it...",
+				], function() {
+
+					if( hasItem(Wood) ) {
+						askNpc(e, ["You will give it to me, because you're the right person."], function(b) {
+							if( !b ) {
+								talkNpc(e,["That is your destiny from the very beginning..."]);
+								return;
+							}
+							talkNpc(e, ["You were destinated from the very beginning...", "But thank you.", "Once I have finished the bridge, I will build you whatever you want.", "Come to see me another time..."], function() getItem(GaveWood));
+						});
+					} else
+						talkNpc(e, ["You will help me, because you're the right person."]);
+
+				});
+
+
+			case Spring:
+
+				if( hasItem(Love) ) {
+					talkNpc(e, [
+						"WHAT?",
+						"That's what you're asking to me?",
+						"You want me to build you a HOUSE?",
+						"Like, a full HOUSE?",
+						"I know I promised...",
+						"But...",
+						"I'll need time to prepare...",
+					]);
+				} else {
+					talkNpc(e, [
+						"Don't forget to ask me if you want to build something."
+					]);
+				}
 			}
 		case EDog:
 			switch( level.s ) {
+			case Spring:
+
+				talk("I regret him...", function() talk("Or was it she?", function() {
+					if( !hasItem(Bone) ) {
+						talk("Oh!", function() talk("Some bones are showing...", function() talk("I'll get them as a souvenir...", function() {
+							getItem(Bone);
+						})));
+					}
+				}));
+
 			default:
-				talkNpc(e, ["Woof !"], function() {
+				talkNpc(e, ["Woof!"], function() {
 					talk("I don't remember if I like dogs, but this one is cute...");
 				});
 			}
@@ -394,13 +526,13 @@ class Game extends hxd.App {
 			case Autumn:
 
 				if( hasItem(Friend) ) {
-					talkNpc(e, ["Come another time, my friend, and I'll teach you my secret."]);
+					talkNpc(e, ["Let's meet another time, my friend, and I'll teach you my secret."]);
 					return;
 				}
 
-				askNpc(e, ["I'm bored...","Do you want to play with me ?"], function(b) {
+				askNpc(e, ["I'm bored...","Do you want to play with me?"], function(b) {
 					if( !b ) {
-						talkNpc(e, ["I hate you !"]);
+						talkNpc(e, ["I hate you!"]);
 						return;
 					}
 					hero.lock = true;
@@ -410,14 +542,15 @@ class Game extends hxd.App {
 						if( e.anim.alpha <= 0 ) {
 							talk("We had a lot of fun, this day.", function() {
 								talk("I wished it would never end.", function() {
+									hero.lock = true;
 									waitUntil(function(dt) {
 										hero.anim.alpha += 0.01 * dt;
 										e.anim.alpha += 0.01 * dt;
 										if( hero.anim.alpha > 1 ) {
 											hero.anim.alpha = e.anim.alpha = 1;
-											askNpc(e, ["Thank you for playing with me, mister !", "Is it ok for someone like me to be your friend ?"], function(b) {
+											askNpc(e, ["Thank you for playing with me, mister!", "Is it ok for someone like me to be your friend?"], function(b) {
 												if( !b ) {
-													talkNpc(e, ["I hate you !"]);
+													talkNpc(e, ["I hate you!"]);
 													return;
 												}
 												hero.lock = true;
@@ -438,16 +571,16 @@ class Game extends hxd.App {
 			case Summer:
 
 				if( get(ECave) != null ) {
-					talkNpc(e, ["Hope you like my little secret !"]);
+					talkNpc(e, ["Hope you like my little secret!"]);
 					return;
 				}
 
-				askNpc(e, ["Since we have been friend for some time now...", "Do you want to learn about my secret ?"], function(b) {
+				askNpc(e, ["Since we have been friend for some time now...", "Do you want to learn about my secret?"], function(b) {
 					if( !b ) {
-						talkNpc(e, ["I hate you !"]);
+						talkNpc(e, ["I hate you!"]);
 						return;
 					}
-					talkNpc(e, ["Let me show you !", "This is a secret passage !"], function() {
+					talkNpc(e, ["Let me show you!", "This is a secret passage!"], function() {
 						getItem(Cave);
 					});
 				});
@@ -455,16 +588,119 @@ class Game extends hxd.App {
 			case Winter:
 
 				if( hasItem(Snow) ) {
-					talkNpc(e, ["The snow is very cold this year, don't you think, my friend ?"]);
+					talkNpc(e, ["You still have the snow from the other day with you?"]);
 					return;
 				}
 
-			default:
+				if( !hasItem(Friend) ) {
+					talkNpc(e,["..."]);
+					return;
+				}
+
+				askNpc(e, ["Hey, my friend!", "Let's play with snow!"], function(b) {
+					if( !b ) {
+						talkNpc(e, ["Did you kill someone?"]);
+						return;
+					}
+					talk("Another day of fun!", function() {
+						talkNpc(e, ["Hey, keep some snow with you, it's cold!"], function() getItem(Snow));
+					});
+				});
+
+			case Spring:
+
+				talkNpc(e, ["(crying)", "I MISS HIM!!!", "HE WAS MY FRIEND!!!"]);
 
 			}
 
 		case EWomen:
 
+			switch( level.s ) {
+			case Summer:
+				talkNpc(e, ["I wanted to talk to you..."], function() {
+					talk("It started like that, how could I say no?", function() {
+						talkNpc(e, ["We've been together for some time now..."], function() {
+							talk("Like I didn't know.", function() {
+								talkNpc(e, ["I need my freedom back.", "I can't be your little bird anymore.", "Let's be friends, only friends."], function() {
+									talk("It hurts...", function() talk("And what should I do now?"));
+								});
+							});
+						});
+					});
+				});
+			case Spring:
+				if( !hasItem(Meet) ) {
+					talk("I can't talk to her now, we have not met each other yet.");
+					return;
+				}
+				if( hasItem(Love) ) {
+					talkNpc(e, ["You will get us a home, right?", "And maybe we can have a dog too!"]);
+					return;
+				}
+				askNpc(e, ["I've been thinking...", "We've been together for some time now...", "I think we should get a house, for us together."], function(b) {
+					if( !b ) {
+						talkNpc(e, ["Let's talk about it again later today."]);
+						return;
+					}
+					talkNpc(e, ["Really?", "You would do that for me?", "A real home?", "I LOVE YOU!"], function() {
+						getItem(Love);
+						talk("Did she meant it, at least this time?", function() talkNpc(e, ["And maybe we can have a dog too!"]));
+					});
+				});
+			case Winter:
+
+				if( hasItem(Meet) ) {
+					talkNpc(e, ["Hey!", "You're the funny guy from the other day?"]);
+					return;
+				}
+
+				askNpc(e, ["Who are you?", "You want to talk we me?"], function(b) {
+					if( !b ) {
+						talkNpc(e, ["(weirdo)"]);
+						return;
+					}
+					talk("You were beautiful, with your red dress.", function() {
+						talkNpc(e, ["Ah ah ah!", "You're funny!"], function() {
+							talk("Your laugh was worth all the stars in the sky.");
+							getItem(Meet);
+						});
+					});
+				});
+			case Autumn:
+				if( hasItem(MantleGirl) ) {
+					talkNpc(e, ["It's weird.", "The mantle you gave me...", "I feel I have already weared it, before, or maybe after."]);
+					return;
+				}
+				if( !hasItem(Mantle) ) {
+					talkNpc(e, ["It will be winter soon.", "I'm still young, but it will be cold.", "Could you get a mantle for me?", "Please!"]);
+					return;
+				}
+				askNpc(e, ["It will be winter soon.", "I'm still young, but it will be cold.", "Oh!", "You have a mantle for me?", "Thank you!"], function(b) {
+					if( !b ) {
+						talkNpc(e, ["...", "Who's mantle is that in the first place?"]);
+						return;
+					}
+					talkNpc(e, ["Thank you!", "It fits me perfectly, like it was made for me!"], function() getItem(MantleGirl));
+				});
+			}
+
+		case EOldTree:
+
+			if( level.s != Autumn ) return;
+
+			if( !hasItem(Axe) ) {
+				talk("This old tree has died...", function() talk("I can't do anything for it anymore", function() talk("What have I done?")));
+				return;
+			}
+
+			askNpc(e, ["Should I cut this tree?"], function(b) {
+				if( !b ) {
+					talk("When will this life finish?");
+					return;
+				}
+				e.destroy();
+				talk("At least I got some wood...", function() getItem(Wood));
+			});
 
 		default:
 		}
@@ -498,6 +734,7 @@ class Game extends hxd.App {
 		level.root.filters = [blur];
 		blurWay = -1;
 		blurEnd = onEnd;
+		colorMat = null;
 	}
 
 	public function flash(onFlash,onEnd) {
@@ -538,7 +775,7 @@ class Game extends hxd.App {
 					new ent.Item(EMemory, 26, 20);
 				},function() {
 					if( auto ) return;
-					talk("Did I already meet them ?");
+					talk("Did I already meet them?");
 				});
 			case 1:
 				flash(function() {
@@ -551,11 +788,13 @@ class Game extends hxd.App {
 				});
 			case 2:
 				flash(function() {
-					new ent.Npc(EWomen, 44, 5);
+					new ent.Npc(EWomen, 44, 10);
 				},function() {
 					if( auto ) return;
 					talk("My heart feels warm...", function() {
-						talk("And it hurts too, deep inside...");
+						talk("And it hurts too, deep inside...", function() {
+							talk("What was that feeling named, again?");
+						});
 					});
 				});
 			default:
@@ -579,6 +818,19 @@ class Game extends hxd.App {
 			},function() {
 				hero.lock = false;
 			});
+		case Axe:
+			if( !auto ) talk("And that's how I came to acquire an axe...", function() talk("I was so frighten, it was smelling... blood.", function() talk("My blood?")));
+		case MantleGirl, GaveWood:
+			if( hasItem(MantleGirl) && hasItem(GaveWood) ) {
+				hero.lock = true;
+				blurIn();
+				wait(5, function() talk("Thank you for playing.", function() {
+					end = true;
+					talk("The End...");
+				}));
+				blurWay *= -1;
+				blur.sigma = 0;
+			}
 		default:
 		}
 	}
@@ -601,9 +853,9 @@ class Game extends hxd.App {
 
 	override function update( dt : Float ) {
 
-		#if debug
+		//#if debug
 		if( K.isDown(K.SHIFT) ) dt *= 3;
-		#end
+		//#end
 
 		hasAction = K.isPressed(K.SPACE) || K.isPressed("E".code);
 		for( e in events.copy() )
@@ -613,8 +865,9 @@ class Game extends hxd.App {
 			e.update(dt);
 		level.update(dt);
 		if( blur != null ) {
-			blur.sigma -= 0.005 * dt;
-			if( blur.sigma <= 0.2 ) {
+			blur.sigma += 0.005 * dt * blurWay;
+			if( blur.sigma >= 5 ) blur.sigma = 5;
+			if( blur.sigma <= 0.2 && blurWay < 0 ) {
 				blur = null;
 				level.root.filters = [];
 				if( blurEnd != null ) blurEnd();
@@ -642,8 +895,6 @@ class Game extends hxd.App {
 	static function main() {
 		hxd.Res.initEmbed({ compressSounds : true });
 		Data.load(hxd.Res.data.entry.getBytes().toString());
-//		hxd.Res.music.loop = true;
-//		hxd.Res.music.play();
 		inst = new Game();
 	}
 

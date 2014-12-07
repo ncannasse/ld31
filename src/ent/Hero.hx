@@ -8,6 +8,7 @@ class Hero extends Entity {
 
 	public function new(x,y) {
 		super(EHero, x, y);
+		anim.speed *= 1.5;
 		bounce = 0.2;
 		friction = 0.7;
 		setBounds(3, 2);

@@ -14,7 +14,7 @@ class House extends Entity {
 	override function update(dt:Float) {
 		if( !game.hero.lock && game.hero.collide(this) && game.hero.y < y ) {
 			game.hero.anim.visible = false;
-			game.askNpc(game.hero, ["Maybe I can sleep here a little..."], function(b) {
+			game.askNpc(game.hero, ["Maybe I can rest here a little..."], function(b) {
 				if( !b ) {
 					game.hero.anim.visible = true;
 					game.hero.y = y + 0.01;

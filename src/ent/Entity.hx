@@ -11,6 +11,11 @@ enum Kind {
 	EChild;
 	EWomen;
 	ECave;
+	EWomen2;
+	ETomb;
+	EWomen3;
+	EChildCry;
+	EOldTree;
 }
 
 class Entity {

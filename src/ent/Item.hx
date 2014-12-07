@@ -6,9 +6,10 @@ class Item extends Entity {
 		super.init();
 		setBounds(2, 2);
 		if( kind == ECave ) {
-			game.level.root.add(anim, 0);
+			for( f in anim.frames ) f.dy = -1;
+			y -= 1;
 			setBounds(1, 1);
-			bounds.offset(0, -4 / 7);
+			bounds.offset(0, 1-4 / 7);
 		}
 	}
 
@@ -30,7 +31,7 @@ class Item extends Entity {
 						game.hero.x = 32;
 						game.hero.y = 18;
 					case 32:
-						game.hero.x = 5.5;
+						game.hero.x = 7.5;
 						game.hero.y = 10;
 					default:
 						trace(x);
