@@ -80,7 +80,7 @@ class Level {
 	var data : Data.World;
 	var game : Game;
 	public var cellSize = 7;
-	var parts : h2d.SpriteBatch;
+	public var parts : h2d.SpriteBatch;
 	var tiles : Array<h2d.TileGroup>;
 
 	public function new(s) {

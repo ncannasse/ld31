@@ -8,7 +8,7 @@ class Hero extends Entity {
 
 	public function new(x,y) {
 		super(EHero, x, y);
-		anim.speed *= 1.5;
+		anim.speed *= 3;
 		bounce = 0.2;
 		friction = 0.7;
 		setBounds(3, 2);
@@ -16,7 +16,7 @@ class Hero extends Entity {
 	}
 
 	override function update(dt:Float) {
-		var s = 0.02 * dt;
+		var s = 0.03 * dt;
 		var dx = 0., dy = 0.;
 		var osx = anim.scaleX;
 		if( K.isDown(K.LEFT) || K.isDown("Q".code) || K.isDown("A".code) ) {

@@ -28,3 +28,4 @@ Day 2:
 14:30-15:30 : review palettes, added spring
 15:30-17:30 : added summer, added cave, starting final gameplay impl
 17:30-20:50 : finish gameplay, start polish
+20:50-22:20 : added items, fixes, title screen

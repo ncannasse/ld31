@@ -2,19 +2,20 @@ import hxd.Key in K;
 import hxd.Res;
 
 enum ItemKind {
-	Memory;
 	House;
-	Mantle;
-	Snow;
-	Bone;
-	Wood;
-	Axe;
 	Friend;
-	Cave;
+	Bone;
+	Snow;
 	Meet;
 	Love;
-	MantleGirl;
+	Mantle;
+	Axe;
+	Wood;
 	GaveWood;
+	MantleGirl;
+	// no icon
+	Memory;
+	Cave;
 }
 
 class Game extends hxd.App {
@@ -35,12 +36,23 @@ class Game extends hxd.App {
 	var items : Array<ItemKind>;
 	var memoryCount : Int;
 	var end : Bool;
+	var icons : Array<h2d.Bitmap>;
 	public var hasAction : Bool;
 
 	override function init() {
 
 		entities = [];
 		items = [];
+
+		icons = [for( i in 0...11 ) {
+			var b = new h2d.Bitmap(Res.items.toTile().sub(i * 8, 0, 8, 8));
+			s2d.add(b, 3);
+			b.x = 245 + i * 8;
+			b.y = 5;
+			b.alpha = 0.2;
+			b.scale(2 / 3);
+			b;
+		}];
 
 		var grid = hxd.Res.sprites.toTile().grid(9, -5, -8);
 		var line = 0;
@@ -72,6 +84,8 @@ class Game extends hxd.App {
 		hero.lock = false;
 		level.initSnow();
 
+		autoGet(Bone);
+		autoGet(Snow);
 		autoGet(Friend);
 		autoGet(Memory);
 		autoGet(Memory);
@@ -79,15 +93,44 @@ class Game extends hxd.App {
 
 		#else
 
+		var title = new h2d.Bitmap(Res.logo.toTile(), s2d);
+		title.colorAdd = new h3d.Vector(0.8, 0.8, 0.8, 0);
+		title.x = Std.int((s2d.width - title.tile.width * title.scaleX) * 0.5);
+		title.y = 5;
+
+		var copy = getText(s2d);
+		copy.text = "@ncannasse, LD31";
+		copy.textColor = 0x808080;
+		copy.dropShadow = null;
+		copy.y = Std.int((s2d.height - copy.textHeight * copy.scaleX)) - 5;
+		copy.x = Std.int((s2d.width - copy.textWidth * copy.scaleX)) - 5;
+
+		waitUntil(function(dt) {
+			if( action() ) {
+				waitUntil(function(dt) {
+					title.alpha -= 0.01 * dt;
+					copy.alpha -= 0.01 * dt;
+					if( title.alpha < 0 ) {
+						title.remove();
+						copy.remove();
+						blurWay = -1;
+						return true;
+					}
+					return false;
+				});
+				return true;
+			}
+			return false;
+		});
+
 		blurIn(function() {
-			wait(0, function() {
-				talk("Here we are, back again...", function() {
-					talk("How am I supposed to live with that?", function() {
-						level.initSnow();
-					});
+			talk("Here we are, back again...", function() {
+				talk("How am I supposed to live with that?", function() {
+					level.initSnow();
 				});
 			});
 		});
+		blurWay = 0;
 
 		#end
 	}
@@ -133,6 +176,7 @@ class Game extends hxd.App {
 		if( colorMat == null ) {
 			colorMat = new h2d.filter.ColorMatrix();
 			level.root.filters.push(colorMat);
+			s2d.add(level.parts, 1);
 		}
 		hero.lock = true;
 		colorMatWay = 1;
@@ -442,12 +486,12 @@ class Game extends hxd.App {
 					var count = 0;
 					function play() {
 						count++;
-						if( count == 10 ) {
+						if( count == 7 ) {
 							getItem(House);
 							return;
 						}
 						Res.sfx.tin.play();
-						wait(0.7, play);
+						wait(0.5, play);
 					}
 					play();
 				});
@@ -739,12 +783,13 @@ class Game extends hxd.App {
 
 	public function flash(onFlash,onEnd) {
 		var c = new h2d.filter.ColorMatrix();
-		s2d.filters = [c];
+		level.root.filters = [c];
 		var bright = 0., way = 1;
 		waitUntil(function(dt) {
 			bright += dt * 0.03 * way;
 			c.matrix.identity();
 			c.matrix.colorBrightness(bright);
+			c.matrix._14 = 1;
 			if( bright > 1 ) {
 				bright = 1;
 				way = -way;
@@ -752,7 +797,7 @@ class Game extends hxd.App {
 			}
 			if( bright < 0 ) {
 				bright = 0;
-				s2d.filters = [];
+				level.root.filters = [];
 				onEnd();
 				return true;
 			}
@@ -762,6 +807,8 @@ class Game extends hxd.App {
 
 	public function getItem( k : ItemKind, auto = false ) {
 		Res.sfx.pick.play();
+		var ic = icons[k.getIndex()];
+		if( ic != null ) ic.alpha = 1;
 		items.push(k);
 		switch( k ) {
 		case Memory:
@@ -885,6 +932,7 @@ class Game extends hxd.App {
 			if( colorMatValue == 0 ) {
 				colorMat = null;
 				level.root.filters = [];
+				level.root.add(level.parts, 2);
 			}
 		}
 
