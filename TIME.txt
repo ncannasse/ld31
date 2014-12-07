@@ -13,3 +13,10 @@ Day 1:
 17:00-19:00 : music
 19:00-19:45 : autumn landscape
 20:30-21:30 : try lava + music, sleep
+
+
+Day 2:
+------
+
+08:00-10:00 : texts, color and flash, npc dialog system
+10:00-12:00 : started gameplay, house, season transition

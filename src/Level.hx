@@ -7,6 +7,16 @@ abstract Collide(Int) {
 	}
 }
 
+@:enum
+abstract Season(Int) {
+	public var Winter = 0;
+	public var Autumn = 1;
+	public function new(v:Int) {
+		this = v;
+	}
+	public function toInt() return this;
+}
+
 class SnowPart extends Part {
 	var dir : Int;
 	var spawn : Float;
@@ -49,7 +59,7 @@ class SnowPart extends Part {
 
 class Level {
 
-	public var id : Int;
+	public var s : Season;
 	public var root : h2d.Layers;
 	public var width : Int;
 	public var height : Int;
@@ -58,15 +68,12 @@ class Level {
 	var game : Game;
 	public var cellSize = 7;
 	var parts : h2d.SpriteBatch;
+	var tiles : Array<h2d.TileGroup>;
 
-	public function new(id) {
-		this.id = id;
+	public function new(s) {
+		this.s = s;
 		game = Game.inst;
 		root = new h2d.Layers(game.s2d);
-		data = Data.world.all[id];
-		width = data.width;
-		height = data.height;
-		col = [for( i in 0...width * height ) No];
 	}
 
 	public function collide(x:Float, y:Float) {
@@ -76,9 +83,16 @@ class Level {
 	}
 
 	public function init() {
+
+		col = [for( i in 0...width * height ) No];
+		data = Data.world.all[s.toInt() + 1];
+		width = data.width;
+		height = data.height;
+
 		var tile = hxd.Res.world.toTile();
 		var tl = tile.grid(cellSize);
 		var tprops = data.props.getTileset(Data.world, "world.png");
+		tiles = [];
 		for( l in data.layers ) {
 			var ldat = l.data.data.decode();
 
@@ -110,6 +124,7 @@ class Level {
 			}
 
 			var t = new h2d.TileGroup(tile, root);
+			tiles.push(t);
 			var p = -1;
 			for( y in 0...height )
 				for( x in 0...width ) {
@@ -131,24 +146,61 @@ class Level {
 					var tid = out[i++];
 					t.add(x * cellSize, y * cellSize, tl[tid]);
 				}
-				t.y += 2;
 			}
 		}
-		var t = switch( id ) {
-		case 2: h2d.Tile.fromColor(0x502904, 2, 1);
-		default: h2d.Tile.fromColor(0xFFFFFF);
+		var t = switch( s ) {
+		case Autumn: h2d.Tile.fromColor(0x502904, 2, 1);
+		case Winter: h2d.Tile.fromColor(0xFFFFFF);
 		}
 		parts = new h2d.SpriteBatch(t, root);
 		parts.hasUpdate = true;
-		parts.hasRotationScale = id == 2;
+		parts.hasRotationScale = s == Autumn;
 		root.add(parts, 2);
 	}
 
 	function getPartCount() {
-		return switch( id ) {
-		case 2: 1;
-		default: 4;
+		return switch( s ) {
+		case Autumn: 1;
+		case Winter: 4;
 		}
+	}
+
+	public function next(onEnd) {
+		var oparts = parts, otiles = tiles;
+		s = switch( s ) {
+		case Winter: Autumn;
+		case Autumn: Winter;
+		};
+		hasSnow = 0.;
+		init();
+		for( t in tiles )
+			t.alpha = 0;
+		game.waitUntil(function(dt) {
+			for( t in tiles )
+				t.alpha += 0.003 * dt;
+			if( tiles[0].alpha > 1 ) {
+				for( t in tiles )
+					t.alpha = 1;
+				for( t in otiles )
+					t.remove();
+				hasSnow = 0.01;
+				onEnd();
+				return true;
+			}
+			return false;
+		});
+		game.waitUntil(function(dt) {
+			var elts = oparts.getElements();
+			if( !elts.hasNext() ) {
+				oparts.remove();
+				return true;
+			}
+			for( e in elts ) {
+				e.a -= 0.003 * dt;
+				if( e.a < 0 ) e.remove();
+			}
+			return false;
+		});
 	}
 
 	public function initSnow() {

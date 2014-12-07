@@ -3,6 +3,10 @@ package ent;
 enum Kind {
 	EHero;
 	EMemory;
+	EOldWomen;
+	EFisher;
+	EMerchant;
+	EHouse;
 }
 
 class Entity {
@@ -20,6 +24,7 @@ class Entity {
 	public var bounds : h2d.col.Bounds;
 
 	var game : Game;
+	var events : Array< Float -> Bool >;
 
 	public function new(k:Kind, x, y, dir : hxd.Direction = Down) {
 		game = Game.inst;
@@ -95,8 +100,8 @@ class Entity {
 		bounds.set( -w * 0.5, -h, w, h);
 	}
 
-	public function hit( e : ent.Entity ) {
-		destroy();
+	public function hit( px : Float, py : Float ) {
+		return px >= bounds.xMin + x  && py >= bounds.yMin + y && px < bounds.xMax + x && py < bounds.yMax + y;
 	}
 
 	public function collide( e : ent.Entity ) {
