@@ -18,6 +18,17 @@ class Npc extends Entity {
 	}
 
 	override function update(dt:Float) {
+
+		if( kind == EChild ) {
+			if( game.level.s == Summer && game.hasItem(Friend) && game.get(ECave) == null ) {
+				x = 6;
+				y = 10;
+			} else {
+				x = 28;
+				y = 16;
+			}
+		}
+
 		if( anim.speed == 0 )
 			switch( kind ) {
 			case EDog:

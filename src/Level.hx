@@ -11,6 +11,8 @@ abstract Collide(Int) {
 abstract Season(Int) {
 	public var Winter = 0;
 	public var Autumn = 1;
+	public var Summer = 2;
+	public var Spring = 3;
 	public function new(v:Int) {
 		this = v;
 	}
@@ -31,17 +33,27 @@ class SnowPart extends Part {
 
 	override function update(dt:Float) {
 		dt *= 30;
+		var s = Game.inst.level.s;
+		var da = switch( s ) {
+		case Winter: 0.01;
+		default: 0.04;
+		}
 		if( spawn < 0 ) {
-			a += 0.01 * dt * Game.inst.level.hasSnow;
+			a += da * dt * Game.inst.level.hasSnow;
 			if( a > 1 ) {
 				a = 1;
-				spawn = 2 + Math.random() * 3;
+				switch( s ) {
+				case Autumn:
+					spawn = 5 + Math.random() * 3;
+				default:
+					spawn = 2 + Math.random() * 3;
+				}
 			}
 		} else {
 			spawn -= dt;
 			if( spawn < 0 ) {
 				spawn = 0;
-				a -= 0.01 * dt;
+				a -= da * dt;
 				if( a < 0 )
 					return false;
 			}
@@ -52,6 +64,7 @@ class SnowPart extends Part {
 		vx -= vr * 0.01 * dt;
 		if( Math.abs(vx) > 0.05 && Math.random() < 0.1 * dt )
 			dir = -dir;
+		if( y > 210 ) return false;
 		return super.update(dt/60);
 	}
 }
@@ -123,6 +136,7 @@ class Level {
 			default:
 			}
 
+			var isObjects = l.name == "objects", lastY = -1;
 			var t = new h2d.TileGroup(tile, root);
 			tiles.push(t);
 			var p = -1;
@@ -130,10 +144,23 @@ class Level {
 				for( x in 0...width ) {
 					var tid = ldat[++p] - 1;
 					if( tid < 0 ) continue;
-					t.add(x * cellSize, y * cellSize, tl[tid]);
+
+					if( isObjects ) {
+						if( lastY >= 0 && lastY != y ) {
+							t = new h2d.TileGroup(tile);
+							tiles.push(t);
+							root.add(t, 1);
+						}
+						lastY = y;
+						t.y = y * cellSize + 4;
+						t.add(x * cellSize, -4, tl[tid]);
+					} else
+						t.add(x * cellSize, y * cellSize, tl[tid]);
 					var tp = tprops.props[tid];
-					if( tp != null )
+					if( tp != null ) {
+						if( x == 2 && y == 2 ) trace(l.name, tid,tp);
 						col[p] = new Collide(tp.collide + 1);
+					}
 				}
 			if( l.name == "bg" ) {
 				var tbuild = new cdb.TileBuilder(tprops, Std.int(tile.width / cellSize), Std.int(tile.width / cellSize) * Std.int(tile.height / cellSize));
@@ -151,6 +178,8 @@ class Level {
 		var t = switch( s ) {
 		case Autumn: h2d.Tile.fromColor(0x502904, 2, 1);
 		case Winter: h2d.Tile.fromColor(0xFFFFFF);
+		case Summer: null;
+		case Spring: h2d.Tile.fromColor(0x28AEF4, 1, 2);
 		}
 		parts = new h2d.SpriteBatch(t, root);
 		parts.hasUpdate = true;
@@ -162,7 +191,13 @@ class Level {
 		return switch( s ) {
 		case Autumn: 1;
 		case Winter: 4;
+		case Summer: 0;
+		case Spring: 3;
 		}
+	}
+
+	public function startSnow() {
+		hasSnow = 0.01;
 	}
 
 	public function next(onEnd) {
@@ -175,17 +210,26 @@ class Level {
 
 		s = switch( s ) {
 		case Winter: Autumn;
-		case Autumn: Winter;
+		case Autumn: Summer;
+		case Summer: Spring;
+		case Spring: Winter;
 		};
 		hasSnow = 0.;
 		init();
+
+		for( t in tiles )
+			root.add(t, 0);
+
 		root.addChild(b);
 		b.alpha = 1;
 		game.waitUntil(function(dt) {
 			b.alpha -= 0.003 * dt;
 			if( b.alpha < 0 ) {
 				b.remove();
-				hasSnow = 0.01;
+
+				for( t in tiles )
+					root.add(t, 1);
+
 				onEnd();
 				return true;
 			}
@@ -230,6 +274,13 @@ class Level {
 				p.y = Math.random() * height * cellSize * 0.5;
 				p.vy = 0.2 + Math.random() * 0.3;
 				p.a = 0;
+				switch( s ) {
+				case Spring:
+					p.vy = p.vy * 4 + 5;
+					p.vx = p.vy * 0.25;
+					p.a = 0.5;
+				default:
+				}
 				parts.add(p);
 			}
 		}

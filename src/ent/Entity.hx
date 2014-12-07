@@ -10,6 +10,7 @@ enum Kind {
 	EDog;
 	EChild;
 	EWomen;
+	ECave;
 }
 
 class Entity {

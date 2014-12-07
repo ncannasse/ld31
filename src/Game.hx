@@ -10,6 +10,7 @@ enum ItemKind {
 	Wood;
 	Cutter;
 	Friend;
+	Cave;
 }
 
 class Game extends hxd.App {
@@ -38,7 +39,7 @@ class Game extends hxd.App {
 
 		var grid = hxd.Res.sprites.toTile().grid(9, -5, -8);
 		var line = 0;
-		sprites = [for( frames in [3, 4, 4, 4, 8, 0, 6, 4, 6] ) { var a = [for( i in 0...frames ) grid[line * 13 + i]]; line++; a; } ];
+		sprites = [for( frames in [3, 4, 4, 4, 8, 0, 6, 4, 6, 4] ) { var a = [for( i in 0...frames ) grid[line * 13 + i]]; line++; a; } ];
 
 		parts = new h2d.SpriteBatch(hxd.Res.sprites.toTile(), s2d);
 		parts.hasUpdate = true;
@@ -46,8 +47,9 @@ class Game extends hxd.App {
 		s2d.zoom = 3;
 		events = [];
 
-		level = new Level(Winter);
+		level = new Level(Summer);
 		level.init();
+
 		hero = new ent.Hero(4.5, 3.5);
 		hero.lock = true;
 		new ent.Item(EMemory, 13, 15);
@@ -59,6 +61,8 @@ class Game extends hxd.App {
 
 		autoGet(Memory);
 		autoGet(House);
+		autoGet(Memory);
+		autoGet(Friend);
 
 		#else
 
@@ -277,8 +281,9 @@ class Game extends hxd.App {
 	public function enterSeason() {
 		switch( level.s ) {
 		case Autumn:
-			talk("The house is warm, but why do I feel so lonely ?");
+			talk("The house is warm, but why do I feel so lonely ?", level.startSnow);
 		default:
+			level.startSnow();
 		}
 	}
 
@@ -296,6 +301,31 @@ class Game extends hxd.App {
 					"At my age, I don't think I will live through the upcoming winter...",
 					"Why did I trade my mantle in the first place ?",
 				]);
+			case Summer:
+				talkNpc(e, [
+					"It's so hot !",
+					"If someone could bring me something cold, I would give him a present...",
+				]);
+			case Spring:
+				talkNpc(e, [
+					"Spring is the best season don't you think ?",
+					"Makes me feel young again, and forget all these hardships.",
+				]);
+				if( hasItem(Mantle) ) {
+					talkNpc(e, ["It's so hot I don't need a mantle !"]);
+				} else if( hasItem(Snow) ) {
+					askNpc(e, ["Oh !!!", "You have some snow, at this season ?", "Would you give it me ?", "I will exchange for something I don't need."], function(b) {
+						if( !b ) {
+							talkNpc(e, ["You stringy!"]);
+							return;
+						}
+						talkNpc(e, ["Thank you !", "Here's for you !"], function() {
+							wait(0.5, function() getItem(Mantle));
+							hero.lock = true;
+							wait(1.5, function() talk("To date I still wonder why she gave me her mantle.."));
+						});
+					});
+				}
 			}
 		case EFisher:
 			switch( level.s ) {
@@ -311,6 +341,7 @@ class Game extends hxd.App {
 					"They can sense every small change in this world.",
 					"And they are affected by it, as we are."
 				]);
+			default:
 			}
 		case EMerchant:
 
@@ -349,6 +380,7 @@ class Game extends hxd.App {
 					"Thanks to you I could build this new bridge !",
 					"Come to meet me another time and ask me anything in return !",
 				]);
+			default:
 			}
 		case EDog:
 			switch( level.s ) {
@@ -402,6 +434,24 @@ class Game extends hxd.App {
 						return false;
 					});
 				});
+
+			case Summer:
+
+				if( get(ECave) != null ) {
+					talkNpc(e, ["Hope you like my little secret !"]);
+					return;
+				}
+
+				askNpc(e, ["Since we have been friend for some time now...", "Do you want to learn about my secret ?"], function(b) {
+					if( !b ) {
+						talkNpc(e, ["I hate you !"]);
+						return;
+					}
+					talkNpc(e, ["Let me show you !", "This is a secret passage !"], function() {
+						getItem(Cave);
+					});
+				});
+
 			case Winter:
 
 				if( hasItem(Snow) ) {
@@ -409,7 +459,13 @@ class Game extends hxd.App {
 					return;
 				}
 
+			default:
+
 			}
+
+		case EWomen:
+
+
 		default:
 		}
 	}
@@ -444,7 +500,7 @@ class Game extends hxd.App {
 		blurEnd = onEnd;
 	}
 
-	function flash(onFlash,onEnd) {
+	public function flash(onFlash,onEnd) {
 		var c = new h2d.filter.ColorMatrix();
 		s2d.filters = [c];
 		var bright = 0., way = 1;
@@ -513,11 +569,21 @@ class Game extends hxd.App {
 				if( auto ) return;
 				talkTo(get(EMerchant));
 			});
+		case Cave:
+			Res.sfx.pick.play();
+			hero.lock = !auto;
+			flash(function() {
+				new ent.Item(ECave, 6.5, 10);
+				new ent.Item(ECave, 32, 16);
+				new ent.Item(ECave, 24, 10);
+			},function() {
+				hero.lock = false;
+			});
 		default:
 		}
 	}
 
-	function get(k) {
+	public function get(k) {
 		for( e in entities )
 			if( e.kind == k ) return e;
 		return null;
@@ -576,8 +642,8 @@ class Game extends hxd.App {
 	static function main() {
 		hxd.Res.initEmbed({ compressSounds : true });
 		Data.load(hxd.Res.data.entry.getBytes().toString());
-		hxd.Res.music.loop = true;
-		hxd.Res.music.play();
+//		hxd.Res.music.loop = true;
+//		hxd.Res.music.play();
 		inst = new Game();
 	}
 

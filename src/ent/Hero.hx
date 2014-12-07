@@ -10,11 +10,12 @@ class Hero extends Entity {
 		super(EHero, x, y);
 		bounce = 0.2;
 		friction = 0.7;
-		setBounds(3, 6);
+		setBounds(3, 2);
+		bounds.offset(0,-1/7);
 	}
 
 	override function update(dt:Float) {
-		var s = 0.015 * dt;
+		var s = 0.02 * dt;
 		var dx = 0., dy = 0.;
 		var osx = anim.scaleX;
 		if( K.isDown(K.LEFT) || K.isDown("Q".code) || K.isDown("A".code) ) {
@@ -36,7 +37,7 @@ class Hero extends Entity {
 
 		if( game.hasAction && !lock ) {
 			for( e in game.entities ) {
-				if( e.collide(this) || e.hit(x + anim.scaleX, y + bounds.yMax) || e.hit(x + anim.scaleX, y + bounds.yMin) ) {
+				if( e.collide(this) || e.hit(x + anim.scaleX, y + bounds.yMax) || e.hit(x + anim.scaleX, y + bounds.yMin - 0.4) ) {
 					game.hasAction = false;
 					game.talkTo(e);
 					break;
