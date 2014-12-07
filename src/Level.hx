@@ -13,6 +13,7 @@ abstract Season(Int) {
 	public var Autumn = 1;
 	public var Summer = 2;
 	public var Spring = 3;
+	public var End = 4;
 	public function new(v:Int) {
 		this = v;
 	}
@@ -82,6 +83,7 @@ class Level {
 	public var cellSize = 7;
 	public var parts : h2d.SpriteBatch;
 	var tiles : Array<h2d.TileGroup>;
+	var sky : h2d.TileGroup;
 
 	public function new(s) {
 		this.s = s;
@@ -138,6 +140,7 @@ class Level {
 
 			var isObjects = l.name == "objects", lastY = -1;
 			var t = new h2d.TileGroup(tile, root);
+			if( l.name == "sky" ) sky = t;
 			tiles.push(t);
 			var p = -1;
 			for( y in 0...height )
@@ -154,8 +157,11 @@ class Level {
 						lastY = y;
 						t.y = y * cellSize + 4;
 						t.add(x * cellSize, -4, tl[tid]);
-					} else
+					} else {
 						t.add(x * cellSize, y * cellSize, tl[tid]);
+						if( l.name == "sky" )
+							t.add((x + 48) * cellSize, y * cellSize, tl[tid]);
+					}
 					var tp = tprops.props[tid];
 					if( tp != null ) {
 						if( x == 2 && y == 2 ) trace(l.name, tid,tp);
@@ -180,6 +186,7 @@ class Level {
 		case Winter: h2d.Tile.fromColor(0xFFFFFF);
 		case Summer: null;
 		case Spring: h2d.Tile.fromColor(0x28AEF4, 1, 2);
+		case End: h2d.Tile.fromColor(0x08050D);
 		}
 		parts = new h2d.SpriteBatch(t, root);
 		parts.hasUpdate = true;
@@ -193,6 +200,7 @@ class Level {
 		case Winter: 4;
 		case Summer: 0;
 		case Spring: 3;
+		case End: 6;
 		}
 	}
 
@@ -201,7 +209,7 @@ class Level {
 	}
 
 	public function next(onEnd) {
-		var oparts = parts;
+		var oparts = parts, osky = sky;
 
 		var b = new h2d.CachedBitmap(root);
 		b.freezed = true;
@@ -213,10 +221,16 @@ class Level {
 		case Autumn: Summer;
 		case Summer: Spring;
 		case Spring: Winter;
+		case End: End;
 		};
+
+		if( game.hasItem(MantleGirl) && game.hasItem(GaveWood) )
+			s = End;
+
 		hasSnow = 0.;
 		init();
 
+		sky.x = osky.x;
 		for( t in tiles )
 			root.add(t, 0);
 
@@ -265,6 +279,10 @@ class Level {
 	public var hasSnow = 0.;
 
 	public function update(dt:Float) {
+
+		sky.x -= 0.1 * dt;
+		if( sky.x < -336 ) sky.x += 336;
+
 		if( hasSnow > 0 ) {
 			hasSnow += dt / 60;
 			if( hasSnow > 1 ) hasSnow = 1;

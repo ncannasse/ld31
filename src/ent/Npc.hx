@@ -53,6 +53,19 @@ class Npc extends Entity {
 			anim.frames = game.sprites[view.getIndex()];
 		}
 
+		switch( kind ) {
+		case EOldTree:
+			if( curSeason == Autumn ) {
+				anim.alpha += 0.003 * dt;
+				if( anim.alpha > 1 ) anim.alpha = 1;
+			} else {
+				anim.alpha -= 0.003 * dt;
+				if( anim.alpha < 0 ) anim.alpha = 0;
+			}
+			anim.speed = 6;
+		default:
+		}
+
 		if( anim.speed == 0 )
 			switch( kind ) {
 			case EDog:
@@ -108,15 +121,6 @@ class Npc extends Entity {
 			case EMerchant:
 				if( anim.speed == 0 && trand(0.01) )
 					anim.speed = 16;
-			case EOldTree:
-				if( curSeason == Autumn ) {
-					anim.alpha += 0.003 * dt;
-					if( anim.alpha > 1 ) anim.alpha = 1;
-				} else {
-					anim.alpha -= 0.003 * dt;
-					if( anim.alpha < 0 ) anim.alpha = 0;
-				}
-
 			default:
 			}
 	}

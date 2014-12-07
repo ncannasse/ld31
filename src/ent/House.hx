@@ -4,7 +4,7 @@ class House extends Entity {
 
 	override function init() {
 		super.init();
-		var t = hxd.Res.house.toTile().split(4)[0];
+		var t = hxd.Res.house.toTile().split(5)[0];
 		t.dx = -8;
 		t.dy = -13;
 		anim.frames = [t];
@@ -13,6 +13,7 @@ class House extends Entity {
 
 	override function update(dt:Float) {
 		if( !game.hero.lock && game.hero.collide(this) && game.hero.y < y ) {
+			if( game.level.s == End ) return;
 			game.hero.anim.visible = false;
 			game.askNpc(game.hero, ["Maybe I can rest here a little..."], function(b) {
 				if( !b ) {
@@ -27,7 +28,7 @@ class House extends Entity {
 						game.hero.lock = false;
 						game.enterSeason();
 					});
-					var t = new h2d.Bitmap(hxd.Res.house.toTile().split(4)[game.level.s.toInt()], anim);
+					var t = new h2d.Bitmap(hxd.Res.house.toTile().split(5)[game.level.s.toInt()], anim);
 					t.tile.dx = -8;
 					t.tile.dy = -13;
 					t.alpha = 0;

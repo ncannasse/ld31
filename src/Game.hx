@@ -44,19 +44,9 @@ class Game extends hxd.App {
 		entities = [];
 		items = [];
 
-		icons = [for( i in 0...11 ) {
-			var b = new h2d.Bitmap(Res.items.toTile().sub(i * 8, 0, 8, 8));
-			s2d.add(b, 3);
-			b.x = 245 + i * 8;
-			b.y = 5;
-			b.alpha = 0.2;
-			b.scale(2 / 3);
-			b;
-		}];
-
 		var grid = hxd.Res.sprites.toTile().grid(9, -5, -8);
 		var line = 0;
-		sprites = [for( frames in [3, 4, 4, 4, 8, 1, 6, 4, 6, 4, 6, 1, 6, 6] ) { var a = [for( i in 0...frames ) grid[line * 13 + i]]; line++; a; } ];
+		sprites = [for( frames in [3, 4, 4, 4, 8, 4, 6, 4, 6, 4, 6, 1, 6, 6] ) { var a = [for( i in 0...frames ) grid[line * 13 + i]]; line++; a; } ];
 
 		parts = new h2d.SpriteBatch(hxd.Res.sprites.toTile(), s2d);
 		parts.hasUpdate = true;
@@ -77,10 +67,11 @@ class Game extends hxd.App {
 		hero = new ent.Hero(4.5, 3.5);
 		hero.lock = true;
 		new ent.Item(EMemory, 13, 15);
-		new ent.Npc(EOldTree, 2, 3);
+		new ent.Npc(EOldTree, 37, 10);
 
 		#if debug
 
+		initIcons();
 		hero.lock = false;
 		level.initSnow();
 
@@ -90,6 +81,9 @@ class Game extends hxd.App {
 		autoGet(Memory);
 		autoGet(Memory);
 		autoGet(Cave);
+		autoGet(MantleGirl);
+		autoGet(GaveWood);
+		autoGet(House);
 
 		#else
 
@@ -124,6 +118,7 @@ class Game extends hxd.App {
 		});
 
 		blurIn(function() {
+			initIcons();
 			talk("Here we are, back again...", function() {
 				talk("How am I supposed to live with that?", function() {
 					level.initSnow();
@@ -131,8 +126,22 @@ class Game extends hxd.App {
 			});
 		});
 		blurWay = 0;
+		initColorMat();
+		colorMatValue = 1;
 
 		#end
+	}
+
+	function initIcons() {
+		icons = [for( i in 0...11 ) {
+			var b = new h2d.Bitmap(Res.items.toTile().sub(i * 8, 0, 8, 8));
+			s2d.add(b, 3);
+			b.x = 245 + i * 8;
+			b.y = 5;
+			b.alpha = 0.2;
+			b.scale(2 / 3);
+			b;
+		}];
 	}
 
 	function autoGet( k ) {
@@ -172,14 +181,18 @@ class Game extends hxd.App {
 		next();
 	}
 
-	public function talk( text : String, ?onEnd : Void -> Void ) {
+	function initColorMat() {
 		if( colorMat == null ) {
 			colorMat = new h2d.filter.ColorMatrix();
 			level.root.filters.push(colorMat);
 			s2d.add(level.parts, 1);
 		}
-		hero.lock = true;
 		colorMatWay = 1;
+	}
+
+	public function talk( text : String, ?onEnd : Void -> Void ) {
+		initColorMat();
+		hero.lock = true;
 		wait(1, function() {
 			var t = getText(s2d);
 			t.text = text;
@@ -362,6 +375,27 @@ class Game extends hxd.App {
 			talk("Rain theorem proved once more.", function() talk("\"It always rain when you forget your umbrella\"", level.startSnow));
 		case Winter:
 			talk("Here we are, back again...", function() talk("How am I supposed to live with that?", level.startSnow));
+		case End:
+
+			for( e in entities.copy() )
+				if( e != hero && e.kind != EHouse && e.kind != ECave )
+					e.remove();
+
+			talk("This world ends with me...", function() talk("Seems right.", function() {
+
+
+				wait(10, function() {
+					hero.lock = true;
+					blurIn();
+					wait(5, function() talk("Thank you for playing.", function() {
+						end = true;
+						talk("The End...");
+					}));
+					blurWay *= -1;
+					blur.sigma = 0;
+				});
+
+			}));
 		}
 	}
 
@@ -410,6 +444,7 @@ class Game extends hxd.App {
 					"Spring is the best season don't you think?",
 					"Makes me feel young again, when I was in love.",
 				]);
+			default:
 			}
 		case EFisher:
 			switch( level.s ) {
@@ -547,6 +582,7 @@ class Game extends hxd.App {
 						"Don't forget to ask me if you want to build something."
 					]);
 				}
+			default:
 			}
 		case EDog:
 			switch( level.s ) {
@@ -562,7 +598,10 @@ class Game extends hxd.App {
 
 			default:
 				talkNpc(e, ["Woof!"], function() {
-					talk("I don't remember if I like dogs, but this one is cute...");
+					if( hasItem(Bone) )
+						talk("Now I remember. I don't like dogs.");
+					else
+						talk("I don't remember if I like dogs, but this one is cute...");
 				});
 			}
 		case EChild:
@@ -592,7 +631,7 @@ class Game extends hxd.App {
 										e.anim.alpha += 0.01 * dt;
 										if( hero.anim.alpha > 1 ) {
 											hero.anim.alpha = e.anim.alpha = 1;
-											askNpc(e, ["Thank you for playing with me, mister!", "Is it ok for someone like me to be your friend?"], function(b) {
+											askNpc(e, ["Thank you for playing with me!", "Is it ok for someone like me to be your friend?"], function(b) {
 												if( !b ) {
 													talkNpc(e, ["I hate you!"]);
 													return;
@@ -632,7 +671,7 @@ class Game extends hxd.App {
 			case Winter:
 
 				if( hasItem(Snow) ) {
-					talkNpc(e, ["You still have the snow from the other day with you?"]);
+					talkNpc(e, ["When I grow up, I want to catch a lot of clouds fishes!"]);
 					return;
 				}
 
@@ -654,6 +693,8 @@ class Game extends hxd.App {
 			case Spring:
 
 				talkNpc(e, ["(crying)", "I MISS HIM!!!", "HE WAS MY FRIEND!!!"]);
+
+			default:
 
 			}
 
@@ -726,6 +767,7 @@ class Game extends hxd.App {
 					}
 					talkNpc(e, ["Thank you!", "It fits me perfectly, like it was made for me!"], function() getItem(MantleGirl));
 				});
+			default:
 			}
 
 		case EOldTree:
@@ -778,7 +820,6 @@ class Game extends hxd.App {
 		level.root.filters = [blur];
 		blurWay = -1;
 		blurEnd = onEnd;
-		colorMat = null;
 	}
 
 	public function flash(onFlash,onEnd) {
@@ -867,17 +908,6 @@ class Game extends hxd.App {
 			});
 		case Axe:
 			if( !auto ) talk("And that's how I came to acquire an axe...", function() talk("I was so frighten, it was smelling... blood.", function() talk("My blood?")));
-		case MantleGirl, GaveWood:
-			if( hasItem(MantleGirl) && hasItem(GaveWood) ) {
-				hero.lock = true;
-				blurIn();
-				wait(5, function() talk("Thank you for playing.", function() {
-					end = true;
-					talk("The End...");
-				}));
-				blurWay *= -1;
-				blur.sigma = 0;
-			}
 		default:
 		}
 	}
@@ -900,9 +930,9 @@ class Game extends hxd.App {
 
 	override function update( dt : Float ) {
 
-		//#if debug
+		#if debug
 		if( K.isDown(K.SHIFT) ) dt *= 3;
-		//#end
+		#end
 
 		hasAction = K.isPressed(K.SPACE) || K.isPressed("E".code);
 		for( e in events.copy() )
@@ -915,8 +945,8 @@ class Game extends hxd.App {
 			blur.sigma += 0.005 * dt * blurWay;
 			if( blur.sigma >= 5 ) blur.sigma = 5;
 			if( blur.sigma <= 0.2 && blurWay < 0 ) {
+				level.root.filters.remove(blur);
 				blur = null;
-				level.root.filters = [];
 				if( blurEnd != null ) blurEnd();
 			}
 		}
