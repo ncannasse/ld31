@@ -7,6 +7,9 @@ enum Kind {
 	EFisher;
 	EMerchant;
 	EHouse;
+	EDog;
+	EChild;
+	EWomen;
 }
 
 class Entity {

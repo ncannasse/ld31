@@ -20,3 +20,6 @@ Day 2:
 
 08:00-10:00 : texts, color and flash, npc dialog system
 10:00-12:00 : started gameplay, house, season transition
+12:00-13:00 : scenario, planning the whole gameplay
+13:00-13:30 : finished npc animations
+13:30-14:00 : winter + autumn 1 done

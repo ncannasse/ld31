@@ -8,18 +8,22 @@ class House extends Entity {
 		t.dx = -8;
 		t.dy = -13;
 		anim.frames = [t];
+		setBounds(14, 10);
 	}
 
 	override function update(dt:Float) {
 		if( !game.hero.lock && game.hero.collide(this) && game.hero.y < y ) {
+			game.hero.anim.visible = false;
 			game.askNpc(game.hero, ["Maybe I can sleep here a little..."], function(b) {
 				if( !b ) {
+					game.hero.anim.visible = true;
 					game.hero.y = y + 0.01;
 					return;
 				} else {
 					game.hero.lock = true;
 					game.level.next(function() {
 						game.hero.y = y + 0.01;
+						game.hero.anim.visible = true;
 						game.hero.lock = false;
 						game.enterSeason();
 					});

@@ -11,7 +11,10 @@ class Item extends Entity {
 		super.update(dt);
 		if( collide(game.hero) ) {
 			remove();
-			game.getItem(this.kind);
+			game.getItem(switch( kind ) {
+			case EMemory: Memory;
+			default: throw "No item for " + kind;
+			});
 		}
 	}
 

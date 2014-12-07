@@ -166,23 +166,25 @@ class Level {
 	}
 
 	public function next(onEnd) {
-		var oparts = parts, otiles = tiles;
+		var oparts = parts;
+
+		var b = new h2d.CachedBitmap(root);
+		b.freezed = true;
+		for( t in tiles )
+			b.addChild(t);
+
 		s = switch( s ) {
 		case Winter: Autumn;
 		case Autumn: Winter;
 		};
 		hasSnow = 0.;
 		init();
-		for( t in tiles )
-			t.alpha = 0;
+		root.addChild(b);
+		b.alpha = 1;
 		game.waitUntil(function(dt) {
-			for( t in tiles )
-				t.alpha += 0.003 * dt;
-			if( tiles[0].alpha > 1 ) {
-				for( t in tiles )
-					t.alpha = 1;
-				for( t in otiles )
-					t.remove();
+			b.alpha -= 0.003 * dt;
+			if( b.alpha < 0 ) {
+				b.remove();
 				hasSnow = 0.01;
 				onEnd();
 				return true;

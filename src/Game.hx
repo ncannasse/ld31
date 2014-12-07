@@ -1,6 +1,17 @@
 import hxd.Key in K;
 import hxd.Res;
 
+enum ItemKind {
+	Memory;
+	House;
+	Mantle;
+	Snow;
+	Bone;
+	Wood;
+	Cutter;
+	Friend;
+}
+
 class Game extends hxd.App {
 
 	public var entities : Array<ent.Entity>;
@@ -16,8 +27,7 @@ class Game extends hxd.App {
 	var colorMatValue : Float = 0;
 	var colorMatWay : Float = 1;
 	var answerResult : Bool;
-	var items : Array<ent.Entity.Kind>;
-	var debug : h2d.Text;
+	var items : Array<ItemKind>;
 	var memoryCount : Int;
 	public var hasAction : Bool;
 
@@ -28,7 +38,7 @@ class Game extends hxd.App {
 
 		var grid = hxd.Res.sprites.toTile().grid(9, -5, -8);
 		var line = 0;
-		sprites = [for( frames in [3, 4, 4, 4, 8] ) { var a = [for( i in 0...frames ) grid[line * 13 + i]]; line++; a; } ];
+		sprites = [for( frames in [3, 4, 4, 4, 8, 0, 6, 4, 6] ) { var a = [for( i in 0...frames ) grid[line * 13 + i]]; line++; a; } ];
 
 		parts = new h2d.SpriteBatch(hxd.Res.sprites.toTile(), s2d);
 		parts.hasUpdate = true;
@@ -42,34 +52,35 @@ class Game extends hxd.App {
 		hero.lock = true;
 		new ent.Item(EMemory, 13, 15);
 
-		/*
+		#if debug
+
+		hero.lock = false;
+		level.initSnow();
+
+		autoGet(Memory);
+		autoGet(House);
+
+		#else
+
 		blurIn(function() {
 			wait(0, function() {
 				talk("Here we are, back again...", function() {
 					talk("Who am I supposed to be ?", function() {
-						hero.lock = false;
 						level.initSnow();
 					});
 				});
 			});
 		});
-		*/
-		hero.lock = false;
-		level.initSnow();
 
-		#if debug
-		debug = getText(s2d);
 		#end
-
-
-		autoGet(EMemory);
-		autoGet(EHouse);
 	}
 
 	function autoGet( k ) {
 		getItem(k, true);
-		var e = get(k);
-		if( e != null ) e.remove();
+		if( k == Memory ) {
+			var e = get(EMemory);
+			if( e != null ) e.remove();
+		}
 	}
 
 	function action() {
@@ -94,7 +105,7 @@ class Game extends hxd.App {
 		next();
 	}
 
-	public function talk( text : String, onEnd : Void -> Void ) {
+	public function talk( text : String, ?onEnd : Void -> Void ) {
 		if( colorMat == null ) {
 			colorMat = new h2d.filter.ColorMatrix();
 			level.root.filters = [colorMat];
@@ -112,7 +123,8 @@ class Game extends hxd.App {
 					if( t.alpha < 0 ) {
 						t.remove();
 						colorMatWay = -1;
-						onEnd();
+						hero.lock = false;
+						if( onEnd != null ) onEnd();
 						return true;
 					}
 					return false;
@@ -238,6 +250,7 @@ class Game extends hxd.App {
 								answerResult = choice;
 								if( choice ) Res.sfx.valid.play() else Res.sfx.cancel.play();
 								cursor.remove();
+								g.remove();
 								g = d.g;
 								t = d.t;
 								ti = d.ti;
@@ -262,50 +275,141 @@ class Game extends hxd.App {
 	}
 
 	public function enterSeason() {
+		switch( level.s ) {
+		case Autumn:
+			talk("The house is warm, but why do I feel so lonely ?");
+		default:
+		}
 	}
 
 	public function talkTo( e : ent.Entity ) {
-		switch( [e.kind, level.s] ) {
-		case [EOldWomen, Winter]:
-			talkNpc(e,[
-				"It's freezing more than it used to be...",
-				"I hope I had a warm mantle to cover my old bones..."
-			]);
-		case [EFisher, _]:
-			talkNpc(e, [
-				"The clouds are strange these days...",
-				"I don't seem to be able to catch any fish.",
-				"What will happen if they is no more of them ?"
-			]);
-		case [EMerchant, Winter]:
-
-			if( hasItem(EHouse) ) {
-				talkNpc(e, [
-					"Now my debt is paid...",
-					"Please don't come anymore to talk to me."
+		switch( e.kind ) {
+		case EOldWomen:
+			switch( level.s ) {
+			case Winter:
+				talkNpc(e,[
+					"It's freezing more than it used to be...",
+					"I hope I had a warm mantle to cover my old bones..."
 				]);
-				return;
+			case Autumn:
+				talkNpc(e, [
+					"At my age, I don't think I will live through the upcoming winter...",
+					"Why did I trade my mantle in the first place ?",
+				]);
 			}
+		case EFisher:
+			switch( level.s ) {
+			case Winter:
+				talkNpc(e, [
+					"The clouds are strange these days...",
+					"I don't seem to be able to catch any fish.",
+					"What will happen if they is no more of them ?"
+				]);
+			case Autumn:
+				talkNpc(e, [
+					"This new bridge is causing trouble with the fish...",
+					"They can sense every small change in this world.",
+					"And they are affected by it, as we are."
+				]);
+			}
+		case EMerchant:
 
-			askNpc(e, [
-				"So, you came back after all...",
-				"And now you want me to build that house we talk about for you, right ?"
-			], function(b) {
-				if( !b ) return;
+			switch( level.s ) {
+			case Winter:
+				if( hasItem(House) ) {
+					talkNpc(e, [
+						"Now my debt is paid...",
+						"Please don't come anymore to talk to me."
+					]);
+					return;
+				}
 
-				hero.lock = true;
-				var count = 0;
-				function play() {
-					count++;
-					if( count == 10 ) {
-						getItem(EHouse);
+				askNpc(e, [
+					"So, you came back after all...",
+					"And now you want me to build that house we talk about for you, right ?"
+				], function(b) {
+					if( !b ) return;
+
+					hero.lock = true;
+					var count = 0;
+					function play() {
+						count++;
+						if( count == 10 ) {
+							getItem(House);
+							return;
+						}
+						Res.sfx.tin.play();
+						wait(0.7, play);
+					}
+					play();
+				});
+			case Autumn:
+				talkNpc(e, [
+					"Thank you for the wood !",
+					"Thanks to you I could build this new bridge !",
+					"Come to meet me another time and ask me anything in return !",
+				]);
+			}
+		case EDog:
+			switch( level.s ) {
+			default:
+				talkNpc(e, ["Woof !"], function() {
+					talk("I don't remember if I like dogs, but this one is cute...");
+				});
+			}
+		case EChild:
+			switch( level.s ) {
+			case Autumn:
+
+				if( hasItem(Friend) ) {
+					talkNpc(e, ["Come another time, my friend, and I'll teach you my secret."]);
+					return;
+				}
+
+				askNpc(e, ["I'm bored...","Do you want to play with me ?"], function(b) {
+					if( !b ) {
+						talkNpc(e, ["I hate you !"]);
 						return;
 					}
-					Res.sfx.tin.play();
-					wait(0.7, play);
+					hero.lock = true;
+					waitUntil(function(dt) {
+						hero.anim.alpha -= 0.003 * dt;
+						e.anim.alpha -= 0.003 * dt;
+						if( e.anim.alpha <= 0 ) {
+							talk("We had a lot of fun, this day.", function() {
+								talk("I wished it would never end.", function() {
+									waitUntil(function(dt) {
+										hero.anim.alpha += 0.01 * dt;
+										e.anim.alpha += 0.01 * dt;
+										if( hero.anim.alpha > 1 ) {
+											hero.anim.alpha = e.anim.alpha = 1;
+											askNpc(e, ["Thank you for playing with me, mister !", "Is it ok for someone like me to be your friend ?"], function(b) {
+												if( !b ) {
+													talkNpc(e, ["I hate you !"]);
+													return;
+												}
+												hero.lock = true;
+												wait(0.5, function() { getItem(Friend); hero.lock = false;});
+											});
+											return true;
+										}
+										return false;
+									});
+								});
+							});
+							return true;
+						}
+						return false;
+					});
+				});
+			case Winter:
+
+				if( hasItem(Snow) ) {
+					talkNpc(e, ["The snow is very cold this year, don't you think, my friend ?"]);
+					return;
 				}
-				play();
-			});
+
+			}
 		default:
 		}
 	}
@@ -342,12 +446,10 @@ class Game extends hxd.App {
 
 	function flash(onFlash,onEnd) {
 		var c = new h2d.filter.ColorMatrix();
-		colorMat = null;
-		blur = null;
-		level.root.filters = [c];
+		s2d.filters = [c];
 		var bright = 0., way = 1;
 		waitUntil(function(dt) {
-			bright += dt * 0.1 * way;
+			bright += dt * 0.03 * way;
 			c.matrix.identity();
 			c.matrix.colorBrightness(bright);
 			if( bright > 1 ) {
@@ -357,7 +459,7 @@ class Game extends hxd.App {
 			}
 			if( bright < 0 ) {
 				bright = 0;
-				level.root.filters = [];
+				s2d.filters = [];
 				onEnd();
 				return true;
 			}
@@ -365,11 +467,11 @@ class Game extends hxd.App {
 		});
 	}
 
-	public function getItem( k : ent.Entity.Kind, auto = false ) {
+	public function getItem( k : ItemKind, auto = false ) {
 		Res.sfx.pick.play();
 		items.push(k);
 		switch( k ) {
-		case EMemory:
+		case Memory:
 			hero.lock = !auto;
 			switch( memoryCount++ ) {
 			case 0:
@@ -377,17 +479,33 @@ class Game extends hxd.App {
 					new ent.Npc(EOldWomen, 2, 11);
 					new ent.Npc(EFisher, 11, 19);
 					new ent.Npc(EMerchant, 9.6, 14);
-					new ent.Item(EMemory, 23, 12);
+					new ent.Item(EMemory, 26, 20);
 				},function() {
 					if( auto ) return;
-					talk("Did I already meet them ?", function() {
-						hero.lock = false;
-					});
+					talk("Did I already meet them ?");
 				});
 			case 1:
-				trace("TODO");
+				flash(function() {
+					new ent.Npc(EDog, 22, 14);
+					new ent.Npc(EChild, 28, 16);
+					new ent.Item(EMemory, 41, 16);
+				},function() {
+					if( auto ) return;
+					talk("Maybe I will remember them better...");
+				});
+			case 2:
+				flash(function() {
+					new ent.Npc(EWomen, 44, 5);
+				},function() {
+					if( auto ) return;
+					talk("My heart feels warm...", function() {
+						talk("And it hurts too, deep inside...");
+					});
+				});
+			default:
+				hero.lock = false;
 			}
-		case EHouse:
+		case House:
 			hero.lock = !auto;
 			flash(function() {
 				new ent.House(EHouse, 18, 10);
@@ -450,7 +568,6 @@ class Game extends hxd.App {
 				level.root.filters = [];
 			}
 		}
-		if( debug != null ) debug.text = hero.lock ? "LOCK" : "";
 
 		level.root.ysort(1);
 	}
