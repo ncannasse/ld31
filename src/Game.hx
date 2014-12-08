@@ -92,6 +92,10 @@ class Game extends hxd.App {
 		title.x = Std.int((s2d.width - title.tile.width * title.scaleX) * 0.5);
 		title.y = 5;
 
+		var pressed = false;
+		var int = new h2d.Interactive(1000, 1000, title);
+		int.onClick = function(_) pressed = true;
+
 		var copy = getText(s2d);
 		copy.text = "@ncannasse, LD31";
 		copy.textColor = 0x808080;
@@ -100,7 +104,7 @@ class Game extends hxd.App {
 		copy.x = Std.int((s2d.width - copy.textWidth * copy.scaleX)) - 5;
 
 		waitUntil(function(dt) {
-			if( action() ) {
+			if( action() || pressed ) {
 				waitUntil(function(dt) {
 					title.alpha -= 0.01 * dt;
 					copy.alpha -= 0.01 * dt;
