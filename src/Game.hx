@@ -56,7 +56,7 @@ class Game extends hxd.App {
 
 		var time : Level.Season = Winter;
 		#if debug
-		time = Summer;
+		time = Winter;
 		#end
 
 		level = new Level(time);
@@ -406,6 +406,7 @@ class Game extends hxd.App {
 			playMusic(3);
 			talk("This world ends with me...", function() talk("Seems right.", function() {
 
+				level.startSnow();
 
 				wait(10, function() {
 					hero.lock = true;
