@@ -67,7 +67,7 @@ class Game extends hxd.App {
 		hero = new ent.Hero(4.5, 3.5);
 		hero.lock = true;
 		new ent.Item(EMemory, 13, 15);
-		new ent.Npc(EOldTree, 37, 10);
+		new ent.Npc(EOldTree, 38, 11);
 
 		#if debug
 
@@ -454,7 +454,7 @@ class Game extends hxd.App {
 								talkNpc(e, ["You stringy!"]);
 								return;
 							}
-							talkNpc(e, ["How gentle!", "If I were twenty years younger...", "Dreams...", "Here's for you, gentlemen!"], function() {
+							talkNpc(e, ["How gentle!", "If I were twenty years younger...", "Dreams...", "Here's for you, gentlemen."], function() {
 								wait(0.5, function() getItem(Mantle));
 								hero.lock = true;
 								wait(1.5, function() talk("To date I still wonder why she gave me her mantle.."));
@@ -710,9 +710,9 @@ class Game extends hxd.App {
 						talkNpc(e, ["Did you kill someone?"]);
 						return;
 					}
-					talk("And thus, we built a snowman, together, like father and child.", function() {
+					talk("And thus, we built a snowman, together.", function() talk("Like father and child.", function() {
 						talkNpc(e, ["Hey, keep some snow with you, it's cold!"], function() getItem(Snow));
-					});
+					}));
 				});
 
 			case Spring:
@@ -800,7 +800,7 @@ class Game extends hxd.App {
 			if( level.s != Autumn ) return;
 
 			if( !hasItem(Axe) ) {
-				talk("This old tree has died...", function() talk("I can't do anything for it anymore", function() talk("What have I done?")));
+				talk("This old tree has died...", function() talk("I can't do anything for it anymore.", function() talk("What have I done?")));
 				return;
 			}
 
