@@ -29,3 +29,6 @@ Day 2:
 15:30-17:30 : added summer, added cave, starting final gameplay impl
 17:30-20:50 : finish gameplay, start polish
 20:50-22:20 : added items, fixes, title screen
+22:20-00:00 : added end world
+00:00-00:50 : review dialogs, added second music
+00:50-01:30 : final polish
