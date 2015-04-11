@@ -34,13 +34,14 @@ class Game extends hxd.App {
 	var colorMatWay : Float = 1;
 	var answerResult : Bool;
 	var items : Array<ItemKind>;
-	var memoryCount : Int;
+	var memoryCount : Int = 0;
 	var end : Bool;
 	var icons : Array<h2d.Bitmap>;
 	public var hasAction : Bool;
 
 	override function init() {
 
+		inst = this;
 		entities = [];
 		items = [];
 
@@ -159,6 +160,7 @@ class Game extends hxd.App {
 	var channel : hxd.snd.SoundChannel;
 
 	function playMusic( k : Int ) {
+		#if flash
 		if( channel != null ) {
 			var old = channel;
 			waitUntil(function(dt) {
@@ -182,6 +184,7 @@ class Game extends hxd.App {
 			}
 			return false;
 		});
+		#end
 	}
 
 
@@ -1005,7 +1008,7 @@ class Game extends hxd.App {
 	static function main() {
 		hxd.Res.initEmbed({ compressSounds : true });
 		Data.load(hxd.Res.data.entry.getBytes().toString());
-		inst = new Game();
+		new Game();
 	}
 
 }

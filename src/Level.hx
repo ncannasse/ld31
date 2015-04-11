@@ -99,10 +99,10 @@ class Level {
 
 	public function init() {
 
-		col = [for( i in 0...width * height ) No];
 		data = Data.world.all[s.toInt() + 1];
 		width = data.width;
 		height = data.height;
+		col = [for( i in 0...width * height ) No];
 
 		var tile = hxd.Res.world.toTile();
 		var tl = tile.grid(cellSize);
