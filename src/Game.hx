@@ -156,7 +156,7 @@ class Game extends hxd.App {
 		}
 	}
 
-	var channel : hxd.snd.SoundChannel;
+	var channel : hxd.snd.Channel;
 
 	function playMusic( k : Int ) {
 		if( channel != null ) {
@@ -170,10 +170,7 @@ class Game extends hxd.App {
 				return false;
 			});
 		}
-		var c = new hxd.snd.SoundData();
-		c.loadURL("music"+(k==1?"":k+"")+".mp3");
-		channel = c.playNative(0, true);
-		channel.volume = 0;
+		channel = hxd.Res.load("music"+(k==1?"":k+"")+".mp3").toSound().play(true,0);
 		waitUntil(function(dt) {
 			channel.volume += 0.01 * dt;
 			if( channel.volume >= 1 ) {
