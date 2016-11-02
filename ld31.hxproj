@@ -24,7 +24,7 @@
     <option noInlineOnDebug="False" />
     <option mainClass="Game" />
     <option enabledebug="False" />
-    <option additional="-lib heaps&#xA;-lib castle&#xA;-dce full" />
+    <option additional="-lib heaps&#xA;-lib castle&#xA;-dce full&#xA;&#xA;--next&#xA;-js main.js&#xA;-lib heaps&#xA;-lib castle&#xA;-dce full&#xA;-cp src&#xA;-main Game&#xA;&#xA;--next&#xA;-D windowSize=1008x609&#xA;-cpp bin&#xA;-lib heaps&#xA;-lib castle&#xA;-lib hxsdl&#xA;-dce full&#xA;-cp src&#xA;-main Game" />
   </build>
   <!-- haxelib libraries -->
   <haxelib>

@@ -6,3 +6,19 @@
 -lib heaps
 -lib castle
 -dce full
+--next
+-js main.js
+-lib heaps
+-lib castle
+-dce full
+-cp src
+-main Game
+--next
+-D windowSize=1008x609
+-cpp bin
+-lib heaps
+-lib castle
+-lib hxsdl
+-dce full
+-cp src
+-main Game
