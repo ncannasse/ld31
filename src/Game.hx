@@ -859,7 +859,7 @@ class Game extends hxd.App {
 		waitUntil(function(dt) {
 			bright += dt * 0.03 * way;
 			c.matrix.identity();
-			c.matrix.colorBrightness(bright);
+			c.matrix.colorLightness(bright);
 			c.matrix._14 = 1;
 			if( bright > 1 ) {
 				bright = 1;
@@ -987,9 +987,9 @@ class Game extends hxd.App {
 			if( colorMatValue > 1 ) colorMatValue = 1;
 			if( colorMatValue < 0 ) colorMatValue = 0;
 			colorMat.matrix.identity();
-			colorMat.matrix.colorSaturation(1 - colorMatValue * 0.5);
+			colorMat.matrix.colorSaturation(- colorMatValue * 0.5);
 			colorMat.matrix.colorHue( -colorMatValue * 0.1);
-			colorMat.matrix.colorBrightness( -colorMatValue * 0.2 );
+			colorMat.matrix.colorLightness( -colorMatValue * 0.2 );
 			colorMat.matrix.colorContrast( -colorMatValue * 0.2 );
 			if( colorMatValue == 0 ) {
 				colorMat = null;
